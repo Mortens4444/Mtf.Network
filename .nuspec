@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Mtf.Network</id>
+    <version>1.0.0</version>
+    <description>
+      Sentinel SuperPro Harware Key Helper Library.
+      
+      The library includes various serial devices, such as:
+      - Sentinel SuperPro Harware Key
+      
+      Compatibility:
+      - .netstandard2.0
+	</description>
+    <authors>Mortens</authors>
+	<owners>Mortens</owners>
+    <copyright>Copyright © 2024</copyright>
+	<license type="expression">MIT</license>
+	<projectUrl>https://github.com/Mortens4444/Mtf.Network</projectUrl>
+    <repository type="git" url="https://github.com/Mortens4444/Mtf.Network.git" branch="main" commit="00000000000000000000000000000000000000000" />
+	<tags>Sentinel SuperPro Harware Key Mortens</tags>
+	<readme>docs\ReadMe.md</readme>
+    <dependencies>
+      <group targetFramework="netstandard2.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src=".\Mtf.Network\bin\Release\netstandard2.0\**" target="lib\netstandard2.0" />
+	<file src=".\ReadMe.md" target="docs\" />
+  </files>
+</package>
