@@ -4,11 +4,8 @@
     <id>Mtf.Network</id>
     <version>1.0.0</version>
     <description>
-      Sentinel SuperPro Harware Key Helper Library.
-      
-      The library includes various serial devices, such as:
-      - Sentinel SuperPro Harware Key
-      
+      TCP based clients.
+
       Compatibility:
       - .netstandard2.0
 	</description>
