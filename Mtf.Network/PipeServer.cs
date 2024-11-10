@@ -8,9 +8,8 @@ using System.Threading;
 
 namespace Mtf.Network
 {
-    public class PipeServer : IDisposable
+    public class PipeServer : Disposable
     {
-        private int disposed;
         private StreamWriter writer;
         private CancellationTokenSource cancellationTokenSource;
 
@@ -27,11 +26,6 @@ namespace Mtf.Network
         public PipeTransmissionMode PipeTransmissionMode { get; set; } = PipeTransmissionMode.Byte;
 
         public PipeOptions PipeOptions { get; set; } = PipeOptions.Asynchronous;
-
-        ~PipeServer()
-        {
-            Dispose(false);
-        }
 
         public void Start()
         {
@@ -116,24 +110,10 @@ namespace Mtf.Network
             }
         }
 
-        public void Dispose()
+        protected override void DisposeManagedResources()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                Stop();
-                StopWriter();
-            }
+            Stop();
+            StopWriter();
         }
     }
 }

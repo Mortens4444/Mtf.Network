@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class PipeClient : IDisposable
+    public class PipeClient : Disposable
     {
-        private int disposed;
-        private CancellationTokenSource cancellationTokenSource;
         private NamedPipeClientStream namedPipeClientStream;
 
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
@@ -27,11 +25,6 @@ namespace Mtf.Network
 
         public PipeDirection PipeDirection { get; set; } = PipeDirection.InOut;
 
-        ~PipeClient()
-        {
-            Dispose(false);
-        }
-
         public async Task ConnectAsync()
         {
             if (namedPipeClientStream != null && namedPipeClientStream.IsConnected)
@@ -39,12 +32,12 @@ namespace Mtf.Network
                 return;
             }
 
-            cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new CancellationTokenSource();
             namedPipeClientStream = new NamedPipeClientStream(ServerName, PipeName, PipeDirection, PipeOptions);
 
             try
             {
-                await namedPipeClientStream.ConnectAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await namedPipeClientStream.ConnectAsync(CancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -121,16 +114,16 @@ namespace Mtf.Network
         public void StartListening(int bufferSize = 1024)
         {
             StopListening();
-            _ = Task.Run(() => ListenAsync(bufferSize), cancellationTokenSource.Token);
+            _ = Task.Run(() => ListenAsync(bufferSize), CancellationTokenSource.Token);
         }
 
         public void StopListening()
         {
-            if (cancellationTokenSource != null)
+            if (CancellationTokenSource != null)
             {
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = null;
+                CancellationTokenSource.Cancel();
+                CancellationTokenSource.Dispose();
+                CancellationTokenSource = null;
             }
         }
 
@@ -139,9 +132,9 @@ namespace Mtf.Network
             try
             {
                 var buffer = new byte[bufferSize];
-                while (!cancellationTokenSource.Token.IsCancellationRequested)
+                while (!CancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    var bytesRead = await namedPipeClientStream.ReadAsync(buffer, 0, buffer.Length, cancellationTokenSource.Token).ConfigureAwait(false);
+                    var bytesRead = await namedPipeClientStream.ReadAsync(buffer, 0, buffer.Length, CancellationTokenSource.Token).ConfigureAwait(false);
                     if (bytesRead > 0)
                     {
                         var message = Encoding.GetString(buffer, 0, bytesRead);
@@ -156,24 +149,10 @@ namespace Mtf.Network
             }
         }
 
-        public void Dispose()
+        protected override void DisposeManagedResources()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                StopListening();
-                Disconnect();
-            }
+            StopListening();
+            Disconnect();
         }
     }
 }
