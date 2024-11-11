@@ -6,3 +6,5 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+[assembly: SuppressMessage("Style", "IDE0022:Use block body for method")]
+[assembly: SuppressMessage("Design", "CA1032:Implement standard exception constructors")]

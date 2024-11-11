@@ -1,6 +1,8 @@
-﻿namespace Mtf.Network.EventArgs
+﻿using System;
+
+namespace Mtf.Network.EventArg
 {
-    public class MessageEventArgs : System.EventArgs
+    public class MessageEventArgs : EventArgs
     {
         public string Message { get; }
 

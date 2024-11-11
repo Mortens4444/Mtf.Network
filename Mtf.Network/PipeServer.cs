@@ -1,4 +1,4 @@
-﻿using Mtf.Network.EventArgs;
+﻿using Mtf.Network.EventArg;
 using System;
 using System.IO;
 using System.IO.Pipes;

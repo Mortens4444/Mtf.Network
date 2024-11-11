@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mtf.Network.EventArgs
+namespace Mtf.Network.EventArg
 {
-    public class ExceptionEventArgs : System.EventArgs
+    public class ExceptionEventArgs : EventArgs
     {
         public Exception Exception { get; }
 
