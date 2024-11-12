@@ -16,8 +16,9 @@ namespace Mtf.Network
     public class FtpClient : Disposable
     {
         private readonly string ftpServer;
+        private readonly ushort port;
         private string remoteFilePath = String.Empty;
-        private Socket clientSocket;
+        private Socket socket;
 
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
 
@@ -27,9 +28,10 @@ namespace Mtf.Network
         /// Initializes a new instance of the FtpClient class with the specified server, username, and password.
         /// </summary>
         /// <param name="ftpServer">The FTP server address, e.g., "ftp://example.com".</param>
-        public FtpClient(string ftpServer)
+        public FtpClient(string ftpServer, ushort port = 21)
         {
             this.ftpServer = ftpServer;
+            this.port = port;
         }
 
         public Encoding Encoding { get; set; } = Encoding.UTF8;
@@ -39,14 +41,21 @@ namespace Mtf.Network
         /// </summary>
         public void Connect()
         {
-            if (NetUtils.IsSocketConnected(clientSocket))
+            if (NetUtils.IsSocketConnected(socket))
             {
                 throw new InvalidOperationException("Already connected to the FTP server.");
             }
 
-            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            var serverEndpoint = new DnsEndPoint(ftpServer, 21);
-            clientSocket.Connect(serverEndpoint);
+            CancellationTokenSource = new CancellationTokenSource();
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var ipAddresses = Dns.GetHostAddresses(ftpServer);
+            if (ipAddresses.Length == 0)
+            {
+                throw new SocketException((int)SocketError.HostNotFound);
+            }
+
+            var serverEndpoint = new IPEndPoint(ipAddresses[0], port);
+            socket.Connect(serverEndpoint);
             _ = ReceiveAsync(CancellationTokenSource.Token);
         }
 
@@ -55,12 +64,18 @@ namespace Mtf.Network
         /// </summary>
         public void Disconnect()
         {
-            if (NetUtils.IsSocketConnected(clientSocket))
+            if (CancellationTokenSource != null)
             {
-                clientSocket.Shutdown(SocketShutdown.Both);
-                clientSocket.Close();
-                clientSocket.Dispose();
-                clientSocket = null;
+                CancellationTokenSource.Cancel();
+                CancellationTokenSource.Dispose();
+                CancellationTokenSource = null;
+            }
+            if (NetUtils.IsSocketConnected(socket))
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+                socket.Dispose();
+                socket = null;
             }
         }
 
@@ -105,14 +120,9 @@ namespace Mtf.Network
 
         private void ChangePath(string path)
         {
-            if (path == "..")
-            {
-                remoteFilePath = remoteFilePath.Substring(0, remoteFilePath.LastIndexOf('/'));
-            }
-            else
-            {
+            remoteFilePath = path == ".." ?
+                remoteFilePath.Substring(0, remoteFilePath.LastIndexOf('/')) :
                 remoteFilePath += remoteFilePath.EndsWith("/", StringComparison.Ordinal) ? path : $"/{path}";
-            }
         }
 
         /// <summary>
@@ -459,23 +469,22 @@ namespace Mtf.Network
 
         public async Task Send(string command)
         {
-            if (!NetUtils.IsSocketConnected(clientSocket))
+            if (!NetUtils.IsSocketConnected(socket))
             {
                 throw new InvalidOperationException("Not connected to the FTP server.");
             }
 
-            var commandBytes = Encoding.UTF8.GetBytes(command); // Specifikus encodingot adunk meg
-            using (var sendArgs = new SocketAsyncEventArgs { RemoteEndPoint = clientSocket.RemoteEndPoint })
+            var commandBytes = Encoding.GetBytes(command);
+            using (var sendArgs = new SocketAsyncEventArgs { RemoteEndPoint = socket.RemoteEndPoint })
             {
                 sendArgs.SetBuffer(commandBytes, 0, commandBytes.Length);
 
                 var sendTaskCompletion = new TaskCompletionSource<bool>();
                 sendArgs.Completed += (s, e) => sendTaskCompletion.TrySetResult(true);
 
-                // Küldjük el a parancsot aszinkron módon
-                if (!clientSocket.SendAsync(sendArgs))
+                if (!socket.SendAsync(sendArgs))
                 {
-                    _ = sendTaskCompletion.TrySetResult(true); // Ha nem aszinkron módon fut, azonnal jelezzük a befejezést
+                    _ = sendTaskCompletion.TrySetResult(true);
                 }
 
                 _ = await sendTaskCompletion.Task.ConfigureAwait(false);
@@ -508,25 +517,24 @@ namespace Mtf.Network
                 {
                     while (!token.IsCancellationRequested)
                     {
-                        if (!clientSocket.ReceiveAsync(receiveArgs))
+                        if (!socket.ReceiveAsync(receiveArgs))
                         {
-                            _ = receiveTaskCompletion.TrySetResult(receiveArgs.BytesTransferred); // Ha nem aszinkron módon fut, azonnal jelezzük a befejezést
+                            _ = receiveTaskCompletion.TrySetResult(receiveArgs.BytesTransferred);
                         }
 
                         var bytesRead = await receiveTaskCompletion.Task.ConfigureAwait(false);
                         if (bytesRead == 0)
                         {
-                            break; // A kapcsolat lezárult
+                            break;
                         }
 
-                        var response = Encoding.UTF8.GetString(responseBuffer, 0, bytesRead);
+                        var response = Encoding.GetString(responseBuffer, 0, bytesRead);
                         MessageReceived?.Invoke(this, new MessageEventArgs(response));
-                        receiveTaskCompletion = new TaskCompletionSource<int>(); // Új TaskCompletionSource a következő olvasáshoz
+                        receiveTaskCompletion = new TaskCompletionSource<int>();
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    // A fogadás megszakadt
                 }
                 catch (Exception ex)
                 {
