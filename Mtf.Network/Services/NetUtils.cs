@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -109,7 +107,7 @@ namespace Mtf.Network.Services
 
         public static async Task<IPAddress> GetExternalIpAddressAsync()
         {
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new System.Net.Http.HttpClient())
             {
                 try
                 {

@@ -9,6 +9,8 @@ namespace Mtf.Network
     public class Communicator : Disposable
     {
         public event EventHandler<DataArrivedEventArgs> DataArrived;
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
+        public event EventHandler<MessageEventArgs> MessageSent;
 
         public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer)
         {
@@ -55,9 +57,19 @@ namespace Mtf.Network
             return success;
         }
 
-        protected void OnDataArrived(DataArrivedEventArgs e)
+        protected void OnDataArrived(Socket socket, byte[] data)
         {
-            DataArrived?.Invoke(this, e);
+            DataArrived?.Invoke(this, new DataArrivedEventArgs(socket, data));
+        }
+
+        protected void OnErrorOccurred(Exception exception)
+        {
+            ErrorOccurred?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+
+        protected void OnMessageSent(string message)
+        {
+            MessageSent?.Invoke(this, new MessageEventArgs(message));
         }
 
         protected static void SetSocketTimeout(Socket socket, int value)

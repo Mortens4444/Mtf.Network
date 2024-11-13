@@ -115,6 +115,15 @@ namespace Mtf.Network.Test
             label9 = new Label();
             tbFtpHost = new TextBox();
             label8 = new Label();
+            tabPage4 = new TabPage();
+            btnTelnetConnect = new Button();
+            btnSendToTelnetServer = new Button();
+            tbTelnetCommand = new TextBox();
+            nudTelnetPort = new NumericUpDown();
+            label13 = new Label();
+            tbTelnetHost = new TextBox();
+            label14 = new Label();
+            rtbTelnetCommunication = new Controls.AnsiColoringRichTextBox();
             tabControl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -124,6 +133,8 @@ namespace Mtf.Network.Test
             ((System.ComponentModel.ISupportInitialize)nudServerPort).BeginInit();
             tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudFtpPort).BeginInit();
+            tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudTelnetPort).BeginInit();
             SuspendLayout();
             // 
             // tabControl
@@ -131,6 +142,7 @@ namespace Mtf.Network.Test
             tabControl.Controls.Add(tabPage1);
             tabControl.Controls.Add(tabPage2);
             tabControl.Controls.Add(tabPage3);
+            tabControl.Controls.Add(tabPage4);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 0);
             tabControl.Name = "tabControl";
@@ -446,6 +458,7 @@ namespace Mtf.Network.Test
             // rtbFtpCommunication
             // 
             rtbFtpCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            rtbFtpCommunication.BackColor = Color.Silver;
             rtbFtpCommunication.Location = new Point(548, 78);
             rtbFtpCommunication.Name = "rtbFtpCommunication";
             rtbFtpCommunication.Size = new Size(269, 294);
@@ -534,6 +547,100 @@ namespace Mtf.Network.Test
             label8.TabIndex = 0;
             label8.Text = "Host";
             // 
+            // tabPage4
+            // 
+            tabPage4.BackColor = Color.Gray;
+            tabPage4.Controls.Add(btnTelnetConnect);
+            tabPage4.Controls.Add(rtbTelnetCommunication);
+            tabPage4.Controls.Add(btnSendToTelnetServer);
+            tabPage4.Controls.Add(tbTelnetCommand);
+            tabPage4.Controls.Add(nudTelnetPort);
+            tabPage4.Controls.Add(label13);
+            tabPage4.Controls.Add(tbTelnetHost);
+            tabPage4.Controls.Add(label14);
+            tabPage4.Location = new Point(4, 24);
+            tabPage4.Name = "tabPage4";
+            tabPage4.Size = new Size(823, 380);
+            tabPage4.TabIndex = 3;
+            tabPage4.Text = "Telnet";
+            // 
+            // btnTelnetConnect
+            // 
+            btnTelnetConnect.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnTelnetConnect.Location = new Point(238, 28);
+            btnTelnetConnect.Name = "btnTelnetConnect";
+            btnTelnetConnect.Size = new Size(75, 23);
+            btnTelnetConnect.TabIndex = 19;
+            btnTelnetConnect.Text = "Connect";
+            btnTelnetConnect.UseVisualStyleBackColor = true;
+            btnTelnetConnect.Click += BtnTelnetConnect_Click;
+            // 
+            // btnSendToTelnetServer
+            // 
+            btnSendToTelnetServer.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnSendToTelnetServer.Location = new Point(740, 55);
+            btnSendToTelnetServer.Name = "btnSendToTelnetServer";
+            btnSendToTelnetServer.Size = new Size(75, 23);
+            btnSendToTelnetServer.TabIndex = 17;
+            btnSendToTelnetServer.Text = "Send";
+            btnSendToTelnetServer.UseVisualStyleBackColor = true;
+            btnSendToTelnetServer.Click += BtnSendToTelnetServer_Click;
+            // 
+            // tbTelnetCommand
+            // 
+            tbTelnetCommand.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            tbTelnetCommand.Location = new Point(8, 56);
+            tbTelnetCommand.Name = "tbTelnetCommand";
+            tbTelnetCommand.Size = new Size(726, 23);
+            tbTelnetCommand.TabIndex = 16;
+            tbTelnetCommand.Text = "?";
+            // 
+            // nudTelnetPort
+            // 
+            nudTelnetPort.Location = new Point(166, 28);
+            nudTelnetPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            nudTelnetPort.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            nudTelnetPort.Name = "nudTelnetPort";
+            nudTelnetPort.Size = new Size(66, 23);
+            nudTelnetPort.TabIndex = 7;
+            nudTelnetPort.Value = new decimal(new int[] { 23, 0, 0, 0 });
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(166, 9);
+            label13.Name = "label13";
+            label13.Size = new Size(29, 15);
+            label13.TabIndex = 6;
+            label13.Text = "Port";
+            // 
+            // tbTelnetHost
+            // 
+            tbTelnetHost.Location = new Point(8, 27);
+            tbTelnetHost.Name = "tbTelnetHost";
+            tbTelnetHost.Size = new Size(147, 23);
+            tbTelnetHost.TabIndex = 5;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new Point(8, 9);
+            label14.Name = "label14";
+            label14.Size = new Size(32, 15);
+            label14.TabIndex = 4;
+            label14.Text = "Host";
+            // 
+            // rtbTelnetCommunication
+            // 
+            rtbTelnetCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbTelnetCommunication.BackColor = Color.Silver;
+            rtbTelnetCommunication.DisplayAnsiColors = true;
+            rtbTelnetCommunication.Location = new Point(8, 85);
+            rtbTelnetCommunication.Name = "rtbTelnetCommunication";
+            rtbTelnetCommunication.Size = new Size(807, 292);
+            rtbTelnetCommunication.TabIndex = 20;
+            rtbTelnetCommunication.Text = "";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -557,6 +664,9 @@ namespace Mtf.Network.Test
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudFtpPort).EndInit();
+            tabPage4.ResumeLayout(false);
+            tabPage4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudTelnetPort).EndInit();
             ResumeLayout(false);
         }
 
@@ -602,5 +712,14 @@ namespace Mtf.Network.Test
         private Button btnSendFtpCommand;
         private TextBox tbFtpCommandParameter;
         private ComboBox cbFtpCommands;
+        private TabPage tabPage4;
+        private Button btnSendToTelnetServer;
+        private TextBox tbTelnetCommand;
+        private NumericUpDown nudTelnetPort;
+        private Label label13;
+        private TextBox tbTelnetHost;
+        private Label label14;
+        private Button btnTelnetConnect;
+        private Controls.AnsiColoringRichTextBox rtbTelnetCommunication;
     }
 }

@@ -9,6 +9,7 @@ namespace Mtf.Network.Test
         private Server? server;
         private Client client;
         private FtpClient ftpClient;
+        private TelnetClient telnetClient;
 
         public MainForm()
         {
@@ -20,7 +21,8 @@ namespace Mtf.Network.Test
         {
             if (server == null)
             {
-                server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, dataArrivedEventHandler: DataArrivedEventHandler);
+                server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
+                server.DataArrived += DataArrivedEventHandler;
                 server.Start();
             }
         }
@@ -29,7 +31,7 @@ namespace Mtf.Network.Test
         {
             Invoke(() =>
             {
-                rtbServerReceivedMessages.Text += $"{server?.Encoding.GetString(e.Data)}";
+                rtbServerReceivedMessages.AppendText($"{server?.Encoding.GetString(e.Data)}");
                 server?.Send(e.Socket, rtbSendToClient.Text);
                 rtbSendToClient.Text = String.Empty;
             });
@@ -60,7 +62,8 @@ namespace Mtf.Network.Test
             {
                 if (client == null)
                 {
-                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, dataArrivedHandler: ClientDataArrivedEventHandler);
+                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value);
+                    client.DataArrived += ClientDataArrivedEventHandler;
                 }
                 client.Connect();
                 client.Send(rtbClientSend.Text);
@@ -76,7 +79,7 @@ namespace Mtf.Network.Test
         {
             Invoke(() =>
             {
-                rtbClientReceived.Text += $"{client?.Encoding.GetString(e.Data)}";
+                rtbClientReceived.AppendText($"{client?.Encoding.GetString(e.Data)}");
             });
         }
 
@@ -101,7 +104,7 @@ namespace Mtf.Network.Test
 
         private void FtpClient_DataArrived(object? sender, DataArrivedEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Data received: ", ftpClient.Encoding.GetString(e.Data), Environment.NewLine); });
+            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Data received: ", ftpClient.Encoding.GetString(e.Data), Environment.NewLine)); });
         }
 
         private void FtpClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
@@ -111,12 +114,12 @@ namespace Mtf.Network.Test
 
         private void FtpClient_MessageSent(object? sender, MessageEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Message sent: ", e.Message, Environment.NewLine); });
+            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine)); });
         }
 
         private void FtpClient_MessageReceived(object? sender, MessageEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Message received: ", e.Message, Environment.NewLine); });
+            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Message received: ", e.Message, Environment.NewLine)); });
         }
 
         private async void BtnSendFtpCommand_Click(object sender, EventArgs e)
@@ -234,6 +237,56 @@ namespace Mtf.Network.Test
                     ErrorBox.Show("Unknown FTP command", $"Cannot recognize command: {cbFtpCommands.Text}");
                     break;
             }
+        }
+
+        private void BtnSendToTelnetServer_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                telnetClient?.Send(tbTelnetCommand.Text, true);
+                tbTelnetCommand.Text = String.Empty;
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
+        }
+
+        private void BtnTelnetConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                telnetClient = new TelnetClient(tbTelnetHost.Text, (ushort)nudTelnetPort.Value);
+                telnetClient.DataArrived += TelnetClient_DataArrived;
+                telnetClient.MessageSent += TelnetClient_MessageSent;
+                telnetClient.ErrorOccurred += TelnetClient_ErrorOccurred;
+                telnetClient.Connect();
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
+        }
+
+        private void TelnetClient_DataArrived(object? sender, DataArrivedEventArgs e)
+        {
+            Invoke(() =>
+            {
+                rtbTelnetCommunication.AppendText(String.Concat("Data received: ", telnetClient.Encoding.GetString(e.Data), Environment.NewLine));
+            });
+        }
+
+        private void TelnetClient_MessageSent(object? sender, MessageEventArgs e)
+        {
+            Invoke(() =>
+            {
+                rtbTelnetCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
+            });
+        }
+
+        private void TelnetClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
+        {
+            ErrorBox.Show(e.Exception);
         }
     }
 }

@@ -12,9 +12,8 @@ namespace Mtf.Network
     public class Server : Communicator
     {
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork, SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp,
-            ushort listenerPort = 0, EventHandler<DataArrivedEventArgs> dataArrivedEventHandler = null) : base(addressFamily, socketType, protocolType, listenerPort)
+            ushort listenerPort = 0) : base(addressFamily, socketType, protocolType, listenerPort)
         {
-            DataArrived += dataArrivedEventHandler;
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace Mtf.Network
                 {
                     var bytes = new byte[read];
                     Array.Copy(state.Buffer, 0, bytes, 0, read);
-                    OnDataArrived(new DataArrivedEventArgs(state.Socket, bytes));
+                    OnDataArrived(Socket, bytes);
                     state.ReadFromSocket(ServerReadCallback);
                 }
                 else

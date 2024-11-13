@@ -13,13 +13,12 @@ namespace Mtf.Network
     public class Client : Communicator
     {
         public Client(string serverHost, ushort listenerPort, AddressFamily addressFamily = AddressFamily.InterNetwork,
-            SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp,
-            EventHandler<DataArrivedEventArgs> dataArrivedHandler = null)
+            SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp)
             : base(addressFamily, socketType, protocolType, listenerPort)
         {
             ServerHostnameOrIPAddress = serverHost;
-            DataArrived += dataArrivedHandler;
             CreateSocket(addressFamily, socketType, protocolType);
+            SetSocketTimeout(Socket, Constants.SocketConnectionTimeout);
         }
 
         public string ServerHostnameOrIPAddress { get; set; }
@@ -96,7 +95,7 @@ namespace Mtf.Network
                         {
                             var data = new byte[readBytes];
                             Array.Copy(receiveBuffer, data, readBytes);
-                            OnDataArrived(new DataArrivedEventArgs(Socket, data));
+                            OnDataArrived(Socket, data);
                         }
 
                         await Task.Delay(1).ConfigureAwait(false);

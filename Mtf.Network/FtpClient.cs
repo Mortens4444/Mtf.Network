@@ -23,10 +23,10 @@ namespace Mtf.Network
 
         private CancellationTokenSource dataReceiveCancellationTokenSource;
 
-        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
         public event EventHandler<DataArrivedEventArgs> DataArrived;
-        public event EventHandler<MessageEventArgs> MessageSent;
         public event EventHandler<MessageEventArgs> MessageReceived;
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred; // change base to client and remove this
+        public event EventHandler<MessageEventArgs> MessageSent; // too
 
         /// <summary>
         /// Initializes a new instance of the FtpClient class with the specified server, username, and password.
@@ -533,7 +533,7 @@ namespace Mtf.Network
                     else
                     {
                         var socketException = new SocketException((int)e.SocketError);
-                        ErrorOccurred?.Invoke(this, new ExceptionEventArgs(socketException));
+                        OnErrorOccurred(new ExceptionEventArgs(socketException));
                         _ = receiveTaskCompletion.TrySetException(socketException);
                     }
                 };
@@ -563,7 +563,7 @@ namespace Mtf.Network
                 }
                 catch (Exception ex)
                 {
-                    ErrorOccurred?.Invoke(this, new ExceptionEventArgs(ex));
+                    OnErrorOccurred(new ExceptionEventArgs(ex));
                 }
             }
         }
@@ -593,7 +593,7 @@ namespace Mtf.Network
                     else
                     {
                         var socketException = new SocketException((int)e.SocketError);
-                        ErrorOccurred?.Invoke(this, new ExceptionEventArgs(socketException));
+                        OnErrorOccurred(new ExceptionEventArgs(socketException));
                         _ = receiveTaskCompletion.TrySetException(socketException);
                     }
                 };
@@ -625,9 +625,14 @@ namespace Mtf.Network
                 }
                 catch (Exception ex)
                 {
-                    ErrorOccurred?.Invoke(this, new ExceptionEventArgs(ex));
+                    OnErrorOccurred(new ExceptionEventArgs(ex));
                 }
             }
+        }
+
+        protected void OnErrorOccurred(ExceptionEventArgs e)
+        {
+            ErrorOccurred?.Invoke(this, e);
         }
     }
 }
