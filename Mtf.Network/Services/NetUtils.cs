@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Mtf.Network.Services
 {
@@ -68,16 +71,58 @@ namespace Mtf.Network.Services
         public static bool IsPortAvailable(int port)
         {
             var igp = IPGlobalProperties.GetIPGlobalProperties();
-            var tci = igp.GetActiveTcpConnections();
+            var tcpConnections = igp.GetActiveTcpConnections();
 
-            foreach (var connection_info in tci)
+            foreach (var connection in tcpConnections)
             {
-                if (connection_info.LocalEndPoint.Port == port)
+                if (connection.LocalEndPoint.Port == port)
                 {
                     return false;
                 }
             }
             return true;
+        }
+
+        public static string FormatIPEndPoint(IPEndPoint ipEndPoint)
+        {
+            if (ipEndPoint == null)
+            {
+                throw new ArgumentNullException(nameof(ipEndPoint));
+            }
+
+            var addressBytes = ipEndPoint.Address.GetAddressBytes();
+            var h1 = addressBytes[0];
+            var h2 = addressBytes[1];
+            var h3 = addressBytes[2];
+            var h4 = addressBytes[3];
+
+            var portBytes = BitConverter.GetBytes((ushort)ipEndPoint.Port);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(portBytes);
+            }
+            var p1 = portBytes[0];
+            var p2 = portBytes[1];
+
+            return $"{h1},{h2},{h3},{h4},{p1},{p2}";
+        }
+
+        public static async Task<IPAddress> GetExternalIpAddressAsync()
+        {
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    var response = await httpClient.GetStringAsync("http://icanhazip.com");
+                    if (IPAddress.TryParse(response.Trim(), out var ipAddress))
+                    {
+                        return ipAddress;
+                    }
+                }
+                catch { }
+
+                return null;
+            }
         }
     }
 }

@@ -105,7 +105,7 @@ namespace Mtf.Network.Test
             cbFtpCommands = new ComboBox();
             btnAuthenticate = new Button();
             label12 = new Label();
-            richTextBox1 = new RichTextBox();
+            rtbFtpCommunication = new RichTextBox();
             pbFtpPassword = new Controls.PasswordBox();
             fileBrowserView1 = new Controls.FileBrowserView();
             label11 = new Label();
@@ -377,7 +377,7 @@ namespace Mtf.Network.Test
             tabPage3.Controls.Add(cbFtpCommands);
             tabPage3.Controls.Add(btnAuthenticate);
             tabPage3.Controls.Add(label12);
-            tabPage3.Controls.Add(richTextBox1);
+            tabPage3.Controls.Add(rtbFtpCommunication);
             tabPage3.Controls.Add(pbFtpPassword);
             tabPage3.Controls.Add(fileBrowserView1);
             tabPage3.Controls.Add(label11);
@@ -443,14 +443,14 @@ namespace Mtf.Network.Test
             label12.TabIndex = 11;
             label12.Text = "Communication";
             // 
-            // richTextBox1
+            // rtbFtpCommunication
             // 
-            richTextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            richTextBox1.Location = new Point(548, 78);
-            richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(269, 294);
-            richTextBox1.TabIndex = 10;
-            richTextBox1.Text = "";
+            rtbFtpCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            rtbFtpCommunication.Location = new Point(548, 78);
+            rtbFtpCommunication.Name = "rtbFtpCommunication";
+            rtbFtpCommunication.Size = new Size(269, 294);
+            rtbFtpCommunication.TabIndex = 10;
+            rtbFtpCommunication.Text = "";
             // 
             // pbFtpPassword
             // 
@@ -596,7 +596,7 @@ namespace Mtf.Network.Test
         private Label label10;
         private Controls.FileBrowserView fileBrowserView1;
         private Controls.PasswordBox pbFtpPassword;
-        private RichTextBox richTextBox1;
+        private RichTextBox rtbFtpCommunication;
         private Label label12;
         private Button btnAuthenticate;
         private Button btnSendFtpCommand;

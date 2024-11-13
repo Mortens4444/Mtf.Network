@@ -1,7 +1,6 @@
 using MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using System.Net;
 
 namespace Mtf.Network.Test
 {
@@ -86,7 +85,9 @@ namespace Mtf.Network.Test
             try
             {
                 ftpClient = new FtpClient(tbFtpHost.Text.Replace("ftp://", String.Empty), (ushort)nudFtpPort.Value);
+                ftpClient.DataArrived += FtpClient_DataArrived;
                 ftpClient.ErrorOccurred += FtpClient_ErrorOccurred;
+                ftpClient.MessageSent += FtpClient_MessageSent;
                 ftpClient.MessageReceived += FtpClient_MessageReceived;
                 ftpClient.Connect();
                 ftpClient.User(tbFtpUser.Text);
@@ -98,14 +99,24 @@ namespace Mtf.Network.Test
             }
         }
 
+        private void FtpClient_DataArrived(object? sender, DataArrivedEventArgs e)
+        {
+            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Data received: ", ftpClient.Encoding.GetString(e.Data), Environment.NewLine); });
+        }
+
         private void FtpClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
         {
             ErrorBox.Show(e.Exception);
         }
 
+        private void FtpClient_MessageSent(object? sender, MessageEventArgs e)
+        {
+            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Message sent: ", e.Message, Environment.NewLine); });
+        }
+
         private void FtpClient_MessageReceived(object? sender, MessageEventArgs e)
         {
-            Invoke(() => { richTextBox1.Text += String.Concat(e.Message, Environment.NewLine); });
+            Invoke(() => { rtbFtpCommunication.Text += String.Concat("Message received: ", e.Message, Environment.NewLine); });
         }
 
         private async void BtnSendFtpCommand_Click(object sender, EventArgs e)
@@ -136,13 +147,7 @@ namespace Mtf.Network.Test
                         await ftpClient.SetTransferMode(transferMode);
                     break;
                 case "Port":
-                    var parts = commandParameter.Split(',');
-                    if (parts.Length == 3 && IPAddress.TryParse(parts[0], out var address) &&
-                        int.TryParse(parts[1], out int port1) && int.TryParse(parts[2], out int port2))
-                    {
-                        var endPoint = new IPEndPoint(address, 0);
-                        await ftpClient.Port(endPoint, port1, port2);
-                    }
+                    await ftpClient.Port(commandParameter);
                     break;
                 case "ContinueDownload":
                     if (ulong.TryParse(commandParameter, out ulong byteOffset))

@@ -18,10 +18,14 @@ namespace Mtf.Network
         private readonly string ftpServer;
         private readonly ushort port;
         private string remoteFilePath = String.Empty;
-        private Socket socket;
+        private Socket socket, dataSocket;
+        private IPEndPoint localFtpDataEndPoint;
+
+        private CancellationTokenSource dataReceiveCancellationTokenSource;
 
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
-
+        public event EventHandler<DataArrivedEventArgs> DataArrived;
+        public event EventHandler<MessageEventArgs> MessageSent;
         public event EventHandler<MessageEventArgs> MessageReceived;
 
         /// <summary>
@@ -72,9 +76,20 @@ namespace Mtf.Network
             }
             if (NetUtils.IsSocketConnected(socket))
             {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
-                socket.Dispose();
+                NetUtils.CloseSocket(socket);
+                socket = null;
+            }
+
+            if (dataReceiveCancellationTokenSource != null)
+            {
+                dataReceiveCancellationTokenSource.Cancel();
+                dataReceiveCancellationTokenSource.Dispose();
+                dataReceiveCancellationTokenSource = null;
+            }
+
+            if (NetUtils.IsSocketConnected(dataSocket))
+            {
+                NetUtils.CloseSocket(dataSocket);
                 socket = null;
             }
         }
@@ -208,15 +223,24 @@ namespace Mtf.Network
         /// <summary>
         /// Specifies the address and port for data connections.
         /// </summary>
-        /// <param name="endPoint">Client IP address for the connection.</param>
-        /// <param name="port1">High byte of the port.</param>
-        /// <param name="port2">Low byte of the port.</param>
+        /// <param name="h1h2h3h4p1p2">Host and port in h1,h2,h3,h4,p1,p2 format.</param>
         /// <returns>The task representing the process.</returns>
-        public Task Port(IPEndPoint endPoint, int port1, int port2)
+        public async Task Port(string h1h2h3h4p1p2 = null)
         {
-            return endPoint == null
-                ? throw new ArgumentNullException(nameof(endPoint))
-                : Send($"PORT {endPoint.Address.ToString().Replace('.', ',')},{port1},{port2}\r\n");
+            if (!String.IsNullOrEmpty(h1h2h3h4p1p2))
+            {
+                await Send($"PORT {h1h2h3h4p1p2}\r\n").ConfigureAwait(false);
+            }
+
+            var externalIpAddress = await NetUtils.GetExternalIpAddressAsync().ConfigureAwait(false)
+                ?? throw new InvalidOperationException("Unable to get external IP address.");
+
+            localFtpDataEndPoint = new IPEndPoint(externalIpAddress, NetUtils.GetFreePort());
+            await Send($"PORT {NetUtils.FormatIPEndPoint(localFtpDataEndPoint)}\r\n").ConfigureAwait(false);
+            InitializeDataSocket();
+
+            dataReceiveCancellationTokenSource = new CancellationTokenSource();
+            _ = ReceiveDataAsync(dataSocket, dataReceiveCancellationTokenSource.Token);
         }
 
         /// <summary>
@@ -488,6 +512,7 @@ namespace Mtf.Network
                 }
 
                 _ = await sendTaskCompletion.Task.ConfigureAwait(false);
+                MessageSent?.Invoke(this, new MessageEventArgs(command));
             }
         }
 
@@ -530,6 +555,68 @@ namespace Mtf.Network
 
                         var response = Encoding.GetString(responseBuffer, 0, bytesRead);
                         MessageReceived?.Invoke(this, new MessageEventArgs(response));
+                        receiveTaskCompletion = new TaskCompletionSource<int>();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    ErrorOccurred?.Invoke(this, new ExceptionEventArgs(ex));
+                }
+            }
+        }
+
+        private void InitializeDataSocket()
+        {
+            dataSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //dataSocket.Bind(localFtpDataEndPoint);
+            dataSocket.Bind(new IPEndPoint(IPAddress.Any, localFtpDataEndPoint.Port));
+            dataSocket.Listen(1);
+        }
+
+        private async Task ReceiveDataAsync(Socket dataSocket, CancellationToken token)
+        {
+            var buffer = new byte[8192];
+            using (var receiveArgs = new SocketAsyncEventArgs())
+            {
+                receiveArgs.SetBuffer(buffer, 0, buffer.Length);
+
+                var receiveTaskCompletion = new TaskCompletionSource<int>();
+                receiveArgs.Completed += (s, e) =>
+                {
+                    if (e.SocketError == SocketError.Success)
+                    {
+                        _ = receiveTaskCompletion.TrySetResult(e.BytesTransferred);
+                    }
+                    else
+                    {
+                        var socketException = new SocketException((int)e.SocketError);
+                        ErrorOccurred?.Invoke(this, new ExceptionEventArgs(socketException));
+                        _ = receiveTaskCompletion.TrySetException(socketException);
+                    }
+                };
+
+                try
+                {
+                    while (!token.IsCancellationRequested)
+                    {
+                        if (!dataSocket.ReceiveAsync(receiveArgs))
+                        {
+                            _ = receiveTaskCompletion.TrySetResult(receiveArgs.BytesTransferred);
+                        }
+
+                        var bytesRead = await receiveTaskCompletion.Task.ConfigureAwait(false);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+
+                        var data = new byte[bytesRead];
+                        Array.Copy(buffer, data, bytesRead);
+                        DataArrived?.Invoke(this, new DataArrivedEventArgs(dataSocket, data));
+
                         receiveTaskCompletion = new TaskCompletionSource<int>();
                     }
                 }
