@@ -73,8 +73,8 @@ namespace Mtf.Network.Test
             var listViewItem41 = new ListViewItem(new string[] { "DumpStack.log.tmp", ".TMP File", "12 kB" }, ".tmp");
             var listViewItem42 = new ListViewItem(new string[] { "hiberfil.sys", ".SYS File", "6,3 GB" }, ".sys");
             var listViewItem43 = new ListViewItem(new string[] { "Not recognized checkmate.png", ".PNG File", "66,1 kB" }, ".png");
-            var listViewItem44 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "38,2 GB" }, ".sys");
-            var listViewItem45 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "272 MB" }, ".sys");
+            var listViewItem44 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "25,5 GB" }, ".sys");
+            var listViewItem45 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "16 MB" }, ".sys");
             var listViewItem46 = new ListViewItem(new string[] { "vfcompat.dll", ".DLL File", "65,7 kB" }, ".dll");
             tabControl = new TabControl();
             tabPage1 = new TabPage();
@@ -117,13 +117,33 @@ namespace Mtf.Network.Test
             label8 = new Label();
             tabPage4 = new TabPage();
             btnTelnetConnect = new Button();
+            rtbTelnetCommunication = new Controls.AnsiColoringRichTextBox();
             btnSendToTelnetServer = new Button();
             tbTelnetCommand = new TextBox();
             nudTelnetPort = new NumericUpDown();
             label13 = new Label();
             tbTelnetHost = new TextBox();
             label14 = new Label();
-            rtbTelnetCommunication = new Controls.AnsiColoringRichTextBox();
+            tabPage5 = new TabPage();
+            rtbSmtpParams = new RichTextBox();
+            cbSmtpCommands = new ComboBox();
+            btnSmtpConnect = new Button();
+            rtbSmtpCommunication = new Controls.AnsiColoringRichTextBox();
+            tbSendToSmtpServer = new Button();
+            nudSmtpPort = new NumericUpDown();
+            label15 = new Label();
+            tbSmtpHost = new TextBox();
+            label16 = new Label();
+            tabPage6 = new TabPage();
+            rtbPop3Param = new RichTextBox();
+            cbPop3Commands = new ComboBox();
+            btnPop3Connect = new Button();
+            rtbPop3Communication = new Controls.AnsiColoringRichTextBox();
+            btnSendToPop3Server = new Button();
+            nudPop3Port = new NumericUpDown();
+            label17 = new Label();
+            tbPop3Host = new TextBox();
+            label18 = new Label();
             tabControl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -135,6 +155,10 @@ namespace Mtf.Network.Test
             ((System.ComponentModel.ISupportInitialize)nudFtpPort).BeginInit();
             tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudTelnetPort).BeginInit();
+            tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudSmtpPort).BeginInit();
+            tabPage6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudPop3Port).BeginInit();
             SuspendLayout();
             // 
             // tabControl
@@ -143,6 +167,8 @@ namespace Mtf.Network.Test
             tabControl.Controls.Add(tabPage2);
             tabControl.Controls.Add(tabPage3);
             tabControl.Controls.Add(tabPage4);
+            tabControl.Controls.Add(tabPage5);
+            tabControl.Controls.Add(tabPage6);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 0);
             tabControl.Name = "tabControl";
@@ -409,9 +435,9 @@ namespace Mtf.Network.Test
             // btnSendFtpCommand
             // 
             btnSendFtpCommand.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSendFtpCommand.Location = new Point(745, 28);
+            btnSendFtpCommand.Location = new Point(441, 59);
             btnSendFtpCommand.Name = "btnSendFtpCommand";
-            btnSendFtpCommand.Size = new Size(75, 23);
+            btnSendFtpCommand.Size = new Size(101, 23);
             btnSendFtpCommand.TabIndex = 15;
             btnSendFtpCommand.Text = "Send";
             btnSendFtpCommand.UseVisualStyleBackColor = true;
@@ -420,9 +446,9 @@ namespace Mtf.Network.Test
             // tbFtpCommandParameter
             // 
             tbFtpCommandParameter.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            tbFtpCommandParameter.Location = new Point(648, 29);
+            tbFtpCommandParameter.Location = new Point(166, 60);
             tbFtpCommandParameter.Name = "tbFtpCommandParameter";
-            tbFtpCommandParameter.Size = new Size(91, 23);
+            tbFtpCommandParameter.Size = new Size(269, 23);
             tbFtpCommandParameter.TabIndex = 14;
             // 
             // cbFtpCommands
@@ -431,9 +457,9 @@ namespace Mtf.Network.Test
             cbFtpCommands.DropDownStyle = ComboBoxStyle.DropDownList;
             cbFtpCommands.FormattingEnabled = true;
             cbFtpCommands.Items.AddRange(new object[] { "ChangePath", "DeleteFile", "Help", "List", "GetModificationDate", "MakeDirectory", "SetTransferMode", "Port", "ContinueDownload", "Download", "RemoveDirectory", "RenameFile", "RenameTo", "ShellExecute", "GetSize", "Status", "Store", "CreateNewFile", "SetFileStructure", "SetTransferType", "Abort", "ChangeToParentDirectory", "PassiveMode", "Reinitalize", "Quit", "PrintWorkingDirectory", "SystemInfo", "NoOperation", "ExtendedPrintWorkingDirectory", "ExtendedChangeWorkingDirectory", "GetFolderInfo", "GetFileInfo", "User", "Password" });
-            cbFtpCommands.Location = new Point(548, 29);
+            cbFtpCommands.Location = new Point(8, 59);
             cbFtpCommands.Name = "cbFtpCommands";
-            cbFtpCommands.Size = new Size(94, 23);
+            cbFtpCommands.Size = new Size(147, 23);
             cbFtpCommands.TabIndex = 13;
             // 
             // btnAuthenticate
@@ -449,7 +475,7 @@ namespace Mtf.Network.Test
             // label12
             // 
             label12.AutoSize = true;
-            label12.Location = new Point(548, 60);
+            label12.Location = new Point(548, 12);
             label12.Name = "label12";
             label12.Size = new Size(94, 15);
             label12.TabIndex = 11;
@@ -459,9 +485,9 @@ namespace Mtf.Network.Test
             // 
             rtbFtpCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             rtbFtpCommunication.BackColor = Color.Silver;
-            rtbFtpCommunication.Location = new Point(548, 78);
+            rtbFtpCommunication.Location = new Point(548, 31);
             rtbFtpCommunication.Name = "rtbFtpCommunication";
-            rtbFtpCommunication.Size = new Size(269, 294);
+            rtbFtpCommunication.Size = new Size(269, 341);
             rtbFtpCommunication.TabIndex = 10;
             rtbFtpCommunication.Text = "";
             // 
@@ -480,9 +506,9 @@ namespace Mtf.Network.Test
             fileBrowserView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             fileBrowserView1.BackColor = Color.Silver;
             fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem1, listViewItem2, listViewItem3, listViewItem4, listViewItem5, listViewItem6, listViewItem7, listViewItem8, listViewItem9, listViewItem10, listViewItem11, listViewItem12, listViewItem13, listViewItem14, listViewItem15, listViewItem16, listViewItem17, listViewItem18, listViewItem19, listViewItem20, listViewItem21, listViewItem22, listViewItem23, listViewItem24, listViewItem25, listViewItem26, listViewItem27, listViewItem28, listViewItem29, listViewItem30, listViewItem31, listViewItem32, listViewItem33, listViewItem34, listViewItem35, listViewItem36, listViewItem37, listViewItem38, listViewItem39, listViewItem40, listViewItem41, listViewItem42, listViewItem43, listViewItem44, listViewItem45, listViewItem46 });
-            fileBrowserView1.Location = new Point(8, 60);
+            fileBrowserView1.Location = new Point(8, 92);
             fileBrowserView1.Name = "fileBrowserView1";
-            fileBrowserView1.Size = new Size(534, 312);
+            fileBrowserView1.Size = new Size(534, 280);
             fileBrowserView1.TabIndex = 8;
             fileBrowserView1.UseCompatibleStateImageBehavior = false;
             fileBrowserView1.View = View.Details;
@@ -567,7 +593,6 @@ namespace Mtf.Network.Test
             // 
             // btnTelnetConnect
             // 
-            btnTelnetConnect.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnTelnetConnect.Location = new Point(238, 28);
             btnTelnetConnect.Name = "btnTelnetConnect";
             btnTelnetConnect.Size = new Size(75, 23);
@@ -575,6 +600,17 @@ namespace Mtf.Network.Test
             btnTelnetConnect.Text = "Connect";
             btnTelnetConnect.UseVisualStyleBackColor = true;
             btnTelnetConnect.Click += BtnTelnetConnect_Click;
+            // 
+            // rtbTelnetCommunication
+            // 
+            rtbTelnetCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbTelnetCommunication.BackColor = Color.Silver;
+            rtbTelnetCommunication.DisplayAnsiColors = true;
+            rtbTelnetCommunication.Location = new Point(8, 85);
+            rtbTelnetCommunication.Name = "rtbTelnetCommunication";
+            rtbTelnetCommunication.Size = new Size(807, 292);
+            rtbTelnetCommunication.TabIndex = 20;
+            rtbTelnetCommunication.Text = "";
             // 
             // btnSendToTelnetServer
             // 
@@ -594,7 +630,6 @@ namespace Mtf.Network.Test
             tbTelnetCommand.Name = "tbTelnetCommand";
             tbTelnetCommand.Size = new Size(726, 23);
             tbTelnetCommand.TabIndex = 16;
-            tbTelnetCommand.Text = "?";
             // 
             // nudTelnetPort
             // 
@@ -631,16 +666,215 @@ namespace Mtf.Network.Test
             label14.TabIndex = 4;
             label14.Text = "Host";
             // 
-            // rtbTelnetCommunication
+            // tabPage5
             // 
-            rtbTelnetCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            rtbTelnetCommunication.BackColor = Color.Silver;
-            rtbTelnetCommunication.DisplayAnsiColors = true;
-            rtbTelnetCommunication.Location = new Point(8, 85);
-            rtbTelnetCommunication.Name = "rtbTelnetCommunication";
-            rtbTelnetCommunication.Size = new Size(807, 292);
-            rtbTelnetCommunication.TabIndex = 20;
-            rtbTelnetCommunication.Text = "";
+            tabPage5.BackColor = Color.Gray;
+            tabPage5.Controls.Add(rtbSmtpParams);
+            tabPage5.Controls.Add(cbSmtpCommands);
+            tabPage5.Controls.Add(btnSmtpConnect);
+            tabPage5.Controls.Add(rtbSmtpCommunication);
+            tabPage5.Controls.Add(tbSendToSmtpServer);
+            tabPage5.Controls.Add(nudSmtpPort);
+            tabPage5.Controls.Add(label15);
+            tabPage5.Controls.Add(tbSmtpHost);
+            tabPage5.Controls.Add(label16);
+            tabPage5.Location = new Point(4, 24);
+            tabPage5.Name = "tabPage5";
+            tabPage5.Size = new Size(823, 380);
+            tabPage5.TabIndex = 4;
+            tabPage5.Text = "SMTP";
+            // 
+            // rtbSmtpParams
+            // 
+            rtbSmtpParams.BackColor = Color.Silver;
+            rtbSmtpParams.Location = new Point(166, 53);
+            rtbSmtpParams.Name = "rtbSmtpParams";
+            rtbSmtpParams.Size = new Size(568, 68);
+            rtbSmtpParams.TabIndex = 30;
+            rtbSmtpParams.Text = "";
+            // 
+            // cbSmtpCommands
+            // 
+            cbSmtpCommands.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cbSmtpCommands.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbSmtpCommands.FormattingEnabled = true;
+            cbSmtpCommands.Items.AddRange(new object[] { "HELO", "EHLO", "STARTTLS", "DATA", "RSET", "TURN", "EXPN", "NOOP", "MAIL FROM", "SEND FROM", "SOML FROM", "SAML FROM", "SIZE", "VRFY", "QUIT" });
+            cbSmtpCommands.Location = new Point(8, 53);
+            cbSmtpCommands.Name = "cbSmtpCommands";
+            cbSmtpCommands.Size = new Size(147, 23);
+            cbSmtpCommands.TabIndex = 29;
+            // 
+            // btnSmtpConnect
+            // 
+            btnSmtpConnect.Location = new Point(238, 25);
+            btnSmtpConnect.Name = "btnSmtpConnect";
+            btnSmtpConnect.Size = new Size(75, 23);
+            btnSmtpConnect.TabIndex = 27;
+            btnSmtpConnect.Text = "Connect";
+            btnSmtpConnect.UseVisualStyleBackColor = true;
+            btnSmtpConnect.Click += BtnSmtpConnect_Click;
+            // 
+            // rtbSmtpCommunication
+            // 
+            rtbSmtpCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbSmtpCommunication.BackColor = Color.Silver;
+            rtbSmtpCommunication.DisplayAnsiColors = true;
+            rtbSmtpCommunication.Location = new Point(8, 127);
+            rtbSmtpCommunication.Name = "rtbSmtpCommunication";
+            rtbSmtpCommunication.Size = new Size(807, 247);
+            rtbSmtpCommunication.TabIndex = 28;
+            rtbSmtpCommunication.Text = "";
+            // 
+            // tbSendToSmtpServer
+            // 
+            tbSendToSmtpServer.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            tbSendToSmtpServer.Location = new Point(740, 52);
+            tbSendToSmtpServer.Name = "tbSendToSmtpServer";
+            tbSendToSmtpServer.Size = new Size(75, 23);
+            tbSendToSmtpServer.TabIndex = 26;
+            tbSendToSmtpServer.Text = "Send";
+            tbSendToSmtpServer.UseVisualStyleBackColor = true;
+            tbSendToSmtpServer.Click += TbSendToSmtpServer_Click;
+            // 
+            // nudSmtpPort
+            // 
+            nudSmtpPort.Location = new Point(166, 25);
+            nudSmtpPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            nudSmtpPort.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            nudSmtpPort.Name = "nudSmtpPort";
+            nudSmtpPort.Size = new Size(66, 23);
+            nudSmtpPort.TabIndex = 24;
+            nudSmtpPort.Value = new decimal(new int[] { 25, 0, 0, 0 });
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.Location = new Point(166, 6);
+            label15.Name = "label15";
+            label15.Size = new Size(29, 15);
+            label15.TabIndex = 23;
+            label15.Text = "Port";
+            // 
+            // tbSmtpHost
+            // 
+            tbSmtpHost.Location = new Point(8, 24);
+            tbSmtpHost.Name = "tbSmtpHost";
+            tbSmtpHost.Size = new Size(147, 23);
+            tbSmtpHost.TabIndex = 22;
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Location = new Point(8, 6);
+            label16.Name = "label16";
+            label16.Size = new Size(32, 15);
+            label16.TabIndex = 21;
+            label16.Text = "Host";
+            // 
+            // tabPage6
+            // 
+            tabPage6.BackColor = Color.Gray;
+            tabPage6.Controls.Add(rtbPop3Param);
+            tabPage6.Controls.Add(cbPop3Commands);
+            tabPage6.Controls.Add(btnPop3Connect);
+            tabPage6.Controls.Add(rtbPop3Communication);
+            tabPage6.Controls.Add(btnSendToPop3Server);
+            tabPage6.Controls.Add(nudPop3Port);
+            tabPage6.Controls.Add(label17);
+            tabPage6.Controls.Add(tbPop3Host);
+            tabPage6.Controls.Add(label18);
+            tabPage6.Location = new Point(4, 24);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Size = new Size(823, 380);
+            tabPage6.TabIndex = 5;
+            tabPage6.Text = "POP3";
+            // 
+            // rtbPop3Param
+            // 
+            rtbPop3Param.BackColor = Color.Silver;
+            rtbPop3Param.Location = new Point(166, 53);
+            rtbPop3Param.Name = "rtbPop3Param";
+            rtbPop3Param.Size = new Size(568, 68);
+            rtbPop3Param.TabIndex = 39;
+            rtbPop3Param.Text = "";
+            // 
+            // cbPop3Commands
+            // 
+            cbPop3Commands.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cbPop3Commands.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbPop3Commands.FormattingEnabled = true;
+            cbPop3Commands.Items.AddRange(new object[] { "USER", "PASS", "LIST", "RETR", "DELE", "TOP", "APOP", "STAT", "UIDL", "RSET", "NOOP", "QUIT" });
+            cbPop3Commands.Location = new Point(8, 53);
+            cbPop3Commands.Name = "cbPop3Commands";
+            cbPop3Commands.Size = new Size(147, 23);
+            cbPop3Commands.TabIndex = 38;
+            // 
+            // btnPop3Connect
+            // 
+            btnPop3Connect.Location = new Point(238, 25);
+            btnPop3Connect.Name = "btnPop3Connect";
+            btnPop3Connect.Size = new Size(75, 23);
+            btnPop3Connect.TabIndex = 36;
+            btnPop3Connect.Text = "Connect";
+            btnPop3Connect.UseVisualStyleBackColor = true;
+            btnPop3Connect.Click += BtnPop3Connect_Click;
+            // 
+            // rtbPop3Communication
+            // 
+            rtbPop3Communication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbPop3Communication.BackColor = Color.Silver;
+            rtbPop3Communication.DisplayAnsiColors = true;
+            rtbPop3Communication.Location = new Point(8, 127);
+            rtbPop3Communication.Name = "rtbPop3Communication";
+            rtbPop3Communication.Size = new Size(807, 247);
+            rtbPop3Communication.TabIndex = 37;
+            rtbPop3Communication.Text = "";
+            // 
+            // btnSendToPop3Server
+            // 
+            btnSendToPop3Server.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnSendToPop3Server.Location = new Point(740, 52);
+            btnSendToPop3Server.Name = "btnSendToPop3Server";
+            btnSendToPop3Server.Size = new Size(75, 23);
+            btnSendToPop3Server.TabIndex = 35;
+            btnSendToPop3Server.Text = "Send";
+            btnSendToPop3Server.UseVisualStyleBackColor = true;
+            btnSendToPop3Server.Click += BtnSendToPop3Server_Click;
+            // 
+            // nudPop3Port
+            // 
+            nudPop3Port.Location = new Point(166, 25);
+            nudPop3Port.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            nudPop3Port.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            nudPop3Port.Name = "nudPop3Port";
+            nudPop3Port.Size = new Size(66, 23);
+            nudPop3Port.TabIndex = 34;
+            nudPop3Port.Value = new decimal(new int[] { 110, 0, 0, 0 });
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new Point(166, 6);
+            label17.Name = "label17";
+            label17.Size = new Size(29, 15);
+            label17.TabIndex = 33;
+            label17.Text = "Port";
+            // 
+            // tbPop3Host
+            // 
+            tbPop3Host.Location = new Point(8, 24);
+            tbPop3Host.Name = "tbPop3Host";
+            tbPop3Host.Size = new Size(147, 23);
+            tbPop3Host.TabIndex = 32;
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new Point(8, 6);
+            label18.Name = "label18";
+            label18.Size = new Size(32, 15);
+            label18.TabIndex = 31;
+            label18.Text = "Host";
             // 
             // MainForm
             // 
@@ -668,6 +902,12 @@ namespace Mtf.Network.Test
             tabPage4.ResumeLayout(false);
             tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudTelnetPort).EndInit();
+            tabPage5.ResumeLayout(false);
+            tabPage5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudSmtpPort).EndInit();
+            tabPage6.ResumeLayout(false);
+            tabPage6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudPop3Port).EndInit();
             ResumeLayout(false);
         }
 
@@ -722,5 +962,25 @@ namespace Mtf.Network.Test
         private Label label14;
         private Button btnTelnetConnect;
         private Controls.AnsiColoringRichTextBox rtbTelnetCommunication;
+        private TabPage tabPage5;
+        private TabPage tabPage6;
+        private Button btnSmtpConnect;
+        private Controls.AnsiColoringRichTextBox rtbSmtpCommunication;
+        private Button tbSendToSmtpServer;
+        private NumericUpDown nudSmtpPort;
+        private Label label15;
+        private TextBox tbSmtpHost;
+        private Label label16;
+        private RichTextBox rtbSmtpParams;
+        private ComboBox cbSmtpCommands;
+        private RichTextBox rtbPop3Param;
+        private ComboBox cbPop3Commands;
+        private Button btnPop3Connect;
+        private Controls.AnsiColoringRichTextBox rtbPop3Communication;
+        private Button btnSendToPop3Server;
+        private NumericUpDown nudPop3Port;
+        private Label label17;
+        private TextBox tbPop3Host;
+        private Label label18;
     }
 }

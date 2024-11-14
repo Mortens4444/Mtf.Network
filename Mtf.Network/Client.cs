@@ -39,8 +39,10 @@ namespace Mtf.Network
 
         public void Send(string message, bool appendNewLine = false)
         {
-            var data = Encoding.GetBytes(appendNewLine ? String.Concat(message, Environment.NewLine) : message);
+            var messageToSend = appendNewLine ? String.Concat(message, Environment.NewLine) : message;
+            var data = Encoding.GetBytes(messageToSend);
             _ = Send(data);
+            OnMessageSent(messageToSend);
         }
 
         protected override void DisposeManagedResources()
