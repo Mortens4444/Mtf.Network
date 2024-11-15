@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mtf.Network.Enums;
+using System;
 using System.Net.Sockets;
 using System.Text;
 
