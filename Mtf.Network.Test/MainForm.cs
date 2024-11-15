@@ -1,8 +1,7 @@
 using MessageBoxes;
-using Microsoft.VisualBasic.ApplicationServices;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using System.Collections.Generic;
+using Mtf.Network.Models;
 
 namespace Mtf.Network.Test
 {
@@ -254,18 +253,8 @@ namespace Mtf.Network.Test
 
         private void BtnTelnetConnect_Click(object sender, EventArgs e)
         {
-            try
-            {
-                telnetClient = new TelnetClient(tbTelnetHost.Text, (ushort)nudTelnetPort.Value);
-                telnetClient.DataArrived += TelnetClient_DataArrived;
-                telnetClient.MessageSent += TelnetClient_MessageSent;
-                telnetClient.ErrorOccurred += TelnetClient_ErrorOccurred;
-                telnetClient.Connect();
-            }
-            catch (Exception ex)
-            {
-                ErrorBox.Show(ex);
-            }
+            telnetClient = new TelnetClient(tbTelnetHost.Text, (ushort)nudTelnetPort.Value);
+            Connect(telnetClient, rtbTelnetCommunication);
         }
 
         private void BtnSendToTelnetServer_Click(object sender, EventArgs e)
@@ -281,41 +270,10 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void TelnetClient_DataArrived(object? sender, DataArrivedEventArgs e)
-        {
-            Invoke(() =>
-            {
-                rtbTelnetCommunication.AppendText(String.Concat("Data received: ", telnetClient.Encoding.GetString(e.Data), Environment.NewLine));
-            });
-        }
-
-        private void TelnetClient_MessageSent(object? sender, MessageEventArgs e)
-        {
-            Invoke(() =>
-            {
-                rtbTelnetCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
-            });
-        }
-
-        private void TelnetClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
-        {
-            ErrorBox.Show(e.Exception);
-        }
-
         private void BtnSmtpConnect_Click(object sender, EventArgs e)
         {
-            try
-            {
-                smtpClient = new SmtpClient(tbSmtpHost.Text, (ushort)nudSmtpPort.Value);
-                smtpClient.DataArrived += SmtpClient_DataArrived;
-                smtpClient.MessageSent += SmtpClient_MessageSent;
-                smtpClient.ErrorOccurred += SmtpClient_ErrorOccurred;
-                smtpClient.Connect();
-            }
-            catch (Exception ex)
-            {
-                ErrorBox.Show(ex);
-            }
+            smtpClient = new SmtpClient(tbSmtpHost.Text, (ushort)nudSmtpPort.Value);
+            Connect(smtpClient, rtbSmtpCommunication);
         }
 
         private void TbSendToSmtpServer_Click(object sender, EventArgs e)
@@ -403,41 +361,10 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void SmtpClient_DataArrived(object? sender, DataArrivedEventArgs e)
-        {
-            Invoke(() =>
-            {
-                rtbSmtpCommunication.AppendText(String.Concat("Data received: ", smtpClient.Encoding.GetString(e.Data), Environment.NewLine));
-            });
-        }
-
-        private void SmtpClient_MessageSent(object? sender, MessageEventArgs e)
-        {
-            Invoke(() =>
-            {
-                rtbSmtpCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
-            });
-        }
-
-        private void SmtpClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
-        {
-            ErrorBox.Show(e.Exception);
-        }
-
         private void BtnPop3Connect_Click(object sender, EventArgs e)
         {
-            try
-            {
-                pop3Client = new Pop3Client(tbPop3Host.Text, (ushort)nudPop3Port.Value);
-                pop3Client.DataArrived += Pop3Client_DataArrived;
-                pop3Client.MessageSent += Pop3Client_MessageSent;
-                pop3Client.ErrorOccurred += Pop3Client_ErrorOccurred;
-                pop3Client.Connect();
-            }
-            catch (Exception ex)
-            {
-                ErrorBox.Show(ex);
-            }
+            pop3Client = new Pop3Client(tbPop3Host.Text, (ushort)nudPop3Port.Value);
+            Connect(pop3Client, rtbPop3Communication);
         }
 
         private void BtnSendToPop3Server_Click(object sender, EventArgs e)
@@ -498,25 +425,45 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void Pop3Client_DataArrived(object? sender, DataArrivedEventArgs e)
+        private void BtnHttpSend_Click(object sender, EventArgs e)
         {
-            Invoke(() =>
+            try
             {
-                rtbPop3Communication.AppendText(String.Concat("Data received: ", pop3Client.Encoding.GetString(e.Data), Environment.NewLine));
-            });
+                var httpClient = new HttpClient(new Uri(tbHttpHost.Text));
+                Connect(httpClient, rtbHttpCommunication);
+                httpClient.Send(new HttpPacket(new Uri(tbHttpHost.Text)));
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
         }
 
-        private void Pop3Client_MessageSent(object? sender, MessageEventArgs e)
+        private void Connect(Client client, RichTextBox communication)
         {
-            Invoke(() =>
+            try
             {
-                rtbPop3Communication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
-            });
-        }
-
-        private void Pop3Client_ErrorOccurred(object? sender, ExceptionEventArgs e)
-        {
-            ErrorBox.Show(e.Exception);
+                client.DataArrived += (object? sender, DataArrivedEventArgs e) =>
+                {
+                    Invoke(() =>
+                    {
+                        communication.AppendText(String.Concat("Data received: ", client.Encoding.GetString(e.Data), Environment.NewLine));
+                    });
+                };
+                client.MessageSent += (object? sender, MessageEventArgs e) =>
+                {
+                    Invoke(() =>
+                    {
+                        communication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
+                    });
+                };
+                client.ErrorOccurred += (object? sender, ExceptionEventArgs e) => { ErrorBox.Show(e.Exception); };
+                client.Connect();
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
         }
     }
 }
