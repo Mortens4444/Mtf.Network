@@ -1,7 +1,6 @@
-﻿using Mtf.Network.Enums;
+﻿using System;
 using System.Net.Sockets;
 using System.Text;
-using System;
 
 namespace Mtf.Network
 {
