@@ -1,5 +1,4 @@
-﻿using Mtf.Network.EventArg;
-using Mtf.Network.Models;
+﻿using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
 using System.Net;

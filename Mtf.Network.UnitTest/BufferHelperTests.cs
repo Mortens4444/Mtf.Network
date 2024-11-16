@@ -12,8 +12,11 @@ namespace Mtf.Network.UnitTest
 
             int value = BufferHelper.GetNextInt(buffer, ref start);
 
-            Assert.That(value, Is.EqualTo(1));
-            Assert.That(start, Is.EqualTo(4));
+            Assert.Multiple(() =>
+            {
+                Assert.That(value, Is.EqualTo(1));
+                Assert.That(start, Is.EqualTo(4));
+            });
         }
 
         [Test]
@@ -24,8 +27,11 @@ namespace Mtf.Network.UnitTest
 
             long value = BufferHelper.GetNextLong(buffer, ref start);
 
-            Assert.That(value, Is.EqualTo(1L));
-            Assert.That(start, Is.EqualTo(8));
+            Assert.Multiple(() =>
+            {
+                Assert.That(value, Is.EqualTo(1L));
+                Assert.That(start, Is.EqualTo(8));
+            });
         }
 
         [Test]

@@ -7,7 +7,7 @@ namespace Mtf.Network
     public class HttpClient : Client
     {
         public HttpClient(Uri uri)
-            : base(uri.Host, (ushort)uri.Port, AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            : base(uri?.Host ?? throw new ArgumentNullException(nameof(uri)), (ushort)uri.Port, AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
         {
         }
 

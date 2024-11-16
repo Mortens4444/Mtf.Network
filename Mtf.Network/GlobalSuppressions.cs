@@ -16,3 +16,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>", Scope = "member", Target = "~F:Mtf.Network.PipeServer.writer")]
 [assembly: SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>", Scope = "member", Target = "~F:Mtf.Network.PipeServer.cancellationTokenSource")]
 [assembly: SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>", Scope = "member", Target = "~F:Mtf.Network.PipeClient.namedPipeClientStream")]
+[assembly: SuppressMessage("Style", "IDE0010:Add missing cases", Justification = "<Pending>", Scope = "member", Target = "~M:Mtf.Network.SnmpClient.DataArrivedEventHandler(System.Object,Mtf.Network.EventArg.DataArrivedEventArgs)")]

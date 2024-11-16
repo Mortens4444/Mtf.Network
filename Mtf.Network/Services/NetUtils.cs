@@ -111,7 +111,7 @@ namespace Mtf.Network.Services
             {
                 try
                 {
-                    var response = await httpClient.GetStringAsync("http://icanhazip.com");
+                    var response = await httpClient.GetStringAsync("http://icanhazip.com").ConfigureAwait(false);
                     if (IPAddress.TryParse(response.Trim(), out var ipAddress))
                     {
                         return ipAddress;
