@@ -44,12 +44,11 @@
         /// <summary>
         /// Integer (66).
         /// </summary>
-        Integer_66 = 66,
+        Integer66 = 66,
 
         /// <summary>
         /// Integer (67).
         /// </summary>
-        Integer_67 = 67
+        Integer67 = 67
     }
-
 }

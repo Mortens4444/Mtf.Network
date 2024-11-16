@@ -2,6 +2,7 @@
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
 using System;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Text;
 
@@ -43,13 +44,13 @@ namespace Mtf.Network
 
             while (index < e.Data.Length)
             {
-                var snmpDataLength = GetLength(e.Data, ref index);
+                _ = GetLength(e.Data, ref index); // snmpDataLength
 
-                var snmpVersionType = e.Data[index++];
-                var snmpVersionLength = GetLength(e.Data, ref index);
-                var snmpVersion = e.Data[index++];
+                _ = e.Data[index++]; // snmpVersionType
+                _ = GetLength(e.Data, ref index); // snmpVersionLength
+                _ = e.Data[index++]; // snmpVersion
 
-                var communityNameType = e.Data[index++];
+                _ = e.Data[index++]; // communityNameType
                 var communityLength = GetLength(e.Data, ref index);
                 var communityBytes = new byte[communityLength];
                 for (var i = 0; i < communityLength; i++)
@@ -57,30 +58,30 @@ namespace Mtf.Network
                     communityBytes[i] = e.Data[index++];
                 }
 
-                var method = (SnmpMethod)e.Data[index++];
-                var responseDataLength = GetLength(e.Data, ref index);
+                _ = (SnmpMethod)e.Data[index++]; // method
+                _ = GetLength(e.Data, ref index); // responseDataLength
 
-                var snmpResponseIdType = e.Data[index++];
+                _ = e.Data[index++]; // snmpResponseIdType
                 var snmpResponseIdLength = e.Data[index++];
-                var snmpResponseId = ReadBytes(e.Data, ref index, snmpResponseIdLength);
+                _ = ReadBytes(e.Data, ref index, snmpResponseIdLength); // snmpResponseId
 
-                var snmpErrorStatusType = e.Data[index++];
+                _ = e.Data[index++]; // snmpErrorStatusType
                 var snmpErrorStatusLength = e.Data[index++];
                 var snmpErrorStatus = ReadBytes(e.Data, ref index, snmpErrorStatusLength);
 
                 foreach (var errorByte in snmpErrorStatus)
                 {
-                    response.AppendLine(((SnmpStatus)errorByte).ToString());
+                    _ = response.AppendLine(((SnmpStatus)errorByte).ToString());
                 }
 
-                var snmpErrorIndexType = e.Data[index++];
+                _ = e.Data[index++]; // snmpErrorIndexType
                 var snmpErrorIndexLength = e.Data[index++];
-                var snmpErrorIndex = ReadBytes(e.Data, ref index, snmpErrorIndexLength);
+                _ = ReadBytes(e.Data, ref index, snmpErrorIndexLength); // snmpErrorIndex
 
                 index++; // Start of variable bindings sequence
-                var sizeOfVariableBinding = GetLength(e.Data, ref index);
+                _ = GetLength(e.Data, ref index); // sizeOfVariableBinding
                 index++; // Start of first variable bindings sequence
-                var size = GetLength(e.Data, ref index);
+                _ = GetLength(e.Data, ref index); // size
 
                 while (index < e.Data.Length)
                 {
@@ -107,7 +108,7 @@ namespace Mtf.Network
                     }
                 }
 
-                var array = Encoding.ASCII.GetBytes(response.ToString());
+                var array = Encoding.GetBytes(response.ToString());
                 OnDataArrived(Socket, array);
             }
         }
@@ -123,70 +124,76 @@ namespace Mtf.Network
         private static void ReadIpAddress(byte[] data, ref int index, StringBuilder response)
         {
             var ipLength = GetLength(data, ref index);
-            response.AppendLine("IP Address")
-                    .Append("Length: ").AppendLine(ipLength.ToString())
-                    .Append("Value: ");
+            _ = response.AppendLine("IP Address")
+                .AppendLine($"Length: {ipLength}")
+                .Append("Value: ");
             for (var i = 0; i < ipLength; i++)
             {
-                response.Append(data[index++]);
-                if (i < ipLength - 1) response.Append('.');
+                _ = response.Append(data[index++]);
+                if (i < ipLength - 1)
+                {
+                    _ = response.Append('.');
+                }
             }
-            response.AppendLine();
+            _ = response.AppendLine();
         }
 
         private static void ReadOctetString(byte[] data, ref int index, StringBuilder response)
         {
             var strLength = GetLength(data, ref index);
-            response.AppendLine("Octet String")
-                    .Append("Length: ").AppendLine(strLength.ToString())
-                    .Append("Value: ");
+            _ = response.AppendLine("Octet String")
+                .AppendLine($"Length: {strLength}")
+                .Append("Value: ");
             for (var i = 0; i < strLength; i++)
             {
-                response.Append((char)data[index++]);
+                _ = response.Append((char)data[index++]);
             }
-            response.AppendLine();
+            _ = response.AppendLine();
         }
 
         private static void ReadObjectIdentifier(byte[] data, ref int index, StringBuilder response)
         {
             var oidLength = GetLength(data, ref index);
-            response.AppendLine("Object Identifier")
-                    .Append("Length: ").AppendLine(oidLength.ToString())
-                    .Append("Value: ");
+            _ = response.AppendLine("Object Identifier")
+                .AppendLine($"Length: {oidLength}")
+                .Append("Value: ");
             var k = 0;
             while (k < oidLength)
             {
-                if (k > 0) response.Append('.');
+                if (k > 0)
+                {
+                    _ = response.Append('.');
+                }
+
                 if (data[index] >= HalfByte)
                 {
                     var n = data[index] - HalfByte;
-                    response.Append(data[++index] + n * HalfByte);
+                    _ = response.Append(data[++index] + (n * HalfByte));
                     k++;
                     index++;
                 }
                 else
                 {
-                    response.Append(data[index++]);
+                    _ = response.Append(data[index++]);
                 }
                 k++;
             }
-            response.AppendLine();
+            _ = response.AppendLine();
         }
 
         private static void ReadDefaultType(byte[] data, ref int index, SnmpTypes type, StringBuilder response)
         {
-            response.AppendLine($"Unknown type ({type})")
-                .Append("Length: ");
-
             var length = GetLength(data, ref index);
-            response.AppendLine(length.ToString())
-                    .Append("Value: ");
+            _ = response.AppendLine($"Unknown type ({type})")
+                .AppendLine($"Length: {length}")
+                .Append("Value: ");
+
             for (var i = 0; i < length; i++)
             {
-                response.Append(data[index] != 0 ? data[index].ToString() : "<NUL>");
-                response.Append($" ({data[index++]}) ");
+                _ = response.Append(data[index] != 0 ? data[index].ToString(CultureInfo.InvariantCulture) : "<NUL>")
+                    .Append($" ({data[index++]}) ");
             }
-            response.AppendLine();
+            _ = response.AppendLine();
         }
 
         public SnmpMethod SnmpMethod { get; set; } = SnmpMethod.Get;
@@ -198,25 +205,30 @@ namespace Mtf.Network
         /// </summary>
         /// <param name="bytes">The byte array to send.</param>
         /// <returns>True, if all bytes has been sent</returns>
-        public bool Send(byte[] bytes)
+        public new bool Send(byte[] bytes)
         {
-            var str = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
-            var packet = new SnmpPacket(SnmpCommunity, str, SnmpMethod);
-            var sent_bytes = Socket.Send(packet.RawPacket, packet.RawPacket.Length, SocketFlags.None);
-            var success = sent_bytes == packet.RawPacket.Length;
-            return success;
+            return Send(Socket, bytes);
         }
 
-        public bool Send(Socket s, byte[] bytes)
+        public new bool Send(Socket socket, byte[] bytes)
         {
-            var sent_bytes = 0;
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
+            if (bytes == null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
+
+            var sentBytes = 0;
             var str = Encoding.GetString(bytes, 0, bytes.Length);
             var packet = new SnmpPacket(SnmpCommunity, str, SnmpMethod);
-            if (s.Connected)
+            if (socket.Connected)
             {
-                sent_bytes = s.Send(packet.RawPacket, packet.RawPacket.Length, SocketFlags.None);
+                sentBytes = socket.Send(packet.RawPacket, packet.RawPacket.Length, SocketFlags.None);
             }
-            return sent_bytes == bytes.Length;
+            return sentBytes == bytes.Length;
         }
 
         public static TimeSpan ToTimeSpan(double seconds)

@@ -105,6 +105,8 @@ namespace Mtf.Network
         {
             if (writer != null)
             {
+                writer.Flush();
+                writer.Close();
                 writer.Dispose();
                 writer = null;
             }
