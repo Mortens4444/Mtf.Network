@@ -22,14 +22,15 @@ namespace Mtf.Network
         /// </summary>
         public async Task SendDiscoveryMessage()
         {
-            var message = "M-SEARCH * HTTP/1.1\r\n" +
-                          $"HOST: {ServerHostnameOrIPAddress}:{ListenerPortOfServer}\r\n" +
-                          "MAN: \"ssdp:discover\"\r\n" +
-                          "MX: 3\r\n" +
-                          "ST: ssdp:all\r\n" +
-                          "\r\n";
+            var message = new StringBuilder(100)
+                .Append("M-SEARCH * HTTP/1.1\r\n")
+                .Append($"HOST: {ServerHostnameOrIPAddress}:{ListenerPortOfServer}\r\n")
+                .Append("MAN: \"ssdp:discover\"\r\n")
+                .Append("MX: 3\r\n")
+                .Append("ST: ssdp:all\r\n")
+                .Append("\r\n");
 
-            await SendMessageAsync(message).ConfigureAwait(false);
+            await SendMessageAsync(message.ToString()).ConfigureAwait(false);
         }
 
         public async Task SendMessageAsync(string message)
