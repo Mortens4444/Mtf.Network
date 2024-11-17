@@ -4,7 +4,7 @@
     <id>Mtf.Network</id>
     <version>1.0.0</version>
     <description>
-      TCP based clients.
+      TCP-based clients are designed to help understand the basics of network communication. These clients do not encrypt the data they send. I recommend not using them in commercial applications.
 
       Compatibility:
       - .netstandard2.0
@@ -14,8 +14,8 @@
     <copyright>Copyright © 2024</copyright>
 	<license type="expression">MIT</license>
 	<projectUrl>https://github.com/Mortens4444/Mtf.Network</projectUrl>
-    <repository type="git" url="https://github.com/Mortens4444/Mtf.Network.git" branch="main" commit="00000000000000000000000000000000000000000" />
-	<tags>Sentinel SuperPro Harware Key Mortens</tags>
+    <repository type="git" url="https://github.com/Mortens4444/Mtf.Network.git" branch="main" commit="2f98fa9047349882fac304db96064caf251b9749" />
+	<tags>FtpClient HttpClient Pop3Client SmtpClient PipeClient SnmpClient SoapClient TelnetClient UpnpClient Mortens</tags>
 	<readme>docs\ReadMe.md</readme>
     <dependencies>
       <group targetFramework="netstandard2.0" />

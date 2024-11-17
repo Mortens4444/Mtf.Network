@@ -22,6 +22,113 @@ To use `Mtf.Network`, add the package to your project:
    using Mtf.Network;
    ```
 
+## Class: `Client`
+
+The `Client` class facilitates TCP-based communication with a server. It is designed for ease of use, supporting features like connection timeouts, message encoding, and data handling.
+
+### Constructor
+
+**`Client(string serverHost, ushort listenerPort, AddressFamily addressFamily = AddressFamily.InterNetwork, SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp)`**
+
+Initializes a new instance of the `Client` class and sets up a socket for communication.
+
+#### Parameters:
+
+- **`serverHost`**: The hostname or IP address of the server to connect to.
+- **`listenerPort`**: The port on which the server listens for connections.
+- **`addressFamily`** *(optional)*: Specifies the addressing scheme (e.g., IPv4 or IPv6). Default is `AddressFamily.InterNetwork`.
+- **`socketType`** *(optional)*: Defines the socket type (e.g., `Stream` or `Dgram`). Default is `SocketType.Stream`.
+- **`protocolType`** *(optional)*: Specifies the protocol (e.g., `TCP` or `UDP`). Default is `ProtocolType.Tcp`.
+
+---
+
+### Properties
+
+| Property                  | Type     | Description                                              |
+|---------------------------|----------|----------------------------------------------------------|
+| **`ServerHostnameOrIPAddress`** | `string` | The server's hostname or IP address.                     |
+| **`ListenerPortOfClient`**      | `int`    | The local port used by the client for communication.      |
+
+---
+
+### Methods
+
+#### Connection Management
+
+- **`Connect()`**  
+  Establishes a connection to the server using the provided hostname and port. Throws a `ConnectionFailedException` if the connection cannot be established within the specified timeout.
+
+#### Message Handling
+
+- **`Send(string message, bool appendNewLine = false)`**  
+  Sends a message to the connected server. Optionally appends a newline to the message.
+
+  - **`message`**: The message to be sent.
+  - **`appendNewLine`** *(optional)*: If `true`, appends a newline (`Environment.NewLine`) to the message.
+
+#### Resource Management
+
+- **`Dispose()`** *(override)*  
+  Releases managed resources, closes the socket, and cancels any active tasks.
+
+---
+
+### Events
+
+The `Client` class inherits events from the `Communicator` base class:
+
+- **`OnDataArrived(Socket socket, byte[] data)`**  
+  Triggered when data is received from the server.
+
+- **`OnMessageSent(string message)`**  
+  Triggered after a message is successfully sent.
+
+---
+
+### Protected Methods
+
+- **`DisposeManagedResources()`**  
+  Cleans up managed resources during disposal, including canceling tasks and closing the socket.
+
+---
+
+### Example Usage
+
+```csharp
+using Mtf.Network;
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        // Create a client instance
+        var client = new Client("127.0.0.1", 8080);
+
+        try
+        {
+            // Connect to the server
+            client.Connect();
+            Console.WriteLine("Connected to server.");
+
+            // Send a message
+            client.Send("Hello, server!", appendNewLine: true);
+            Console.WriteLine("Message sent to server.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            // Dispose the client
+            client.Dispose();
+            Console.WriteLine("Client disposed.");
+        }
+    }
+}
+```
+
 ## Class: PipeServer
 
 The `PipeServer` class is responsible for handling server-side functionality for named pipes. It accepts connections, listens for messages, and sends data asynchronously to connected clients.
