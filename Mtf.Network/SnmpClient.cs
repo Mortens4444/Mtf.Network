@@ -85,22 +85,22 @@ namespace Mtf.Network
 
                 while (index < e.Data.Length)
                 {
-                    var snmpType = (SnmpTypes)e.Data[index++];
+                    var snmpType = (SnmpType)e.Data[index++];
                     switch (snmpType)
                     {
-                        case SnmpTypes.IPAddress:
+                        case SnmpType.IPAddress:
                             ReadIpAddress(e.Data, ref index, response);
                             break;
-                        case SnmpTypes.OctetString:
+                        case SnmpType.OctetString:
                             ReadOctetString(e.Data, ref index, response);
                             break;
-                        case SnmpTypes.Null:
+                        case SnmpType.Null:
                             index += 2;
                             break;
-                        case SnmpTypes.ObjectIdentifier:
+                        case SnmpType.ObjectIdentifier:
                             ReadObjectIdentifier(e.Data, ref index, response);
                             break;
-                        case SnmpTypes.SNMPSequenceStart:
+                        case SnmpType.Sequence:
                             break; // Continue the main loop for another sequence
                         default:
                             ReadDefaultType(e.Data, ref index, snmpType, response);
@@ -181,7 +181,7 @@ namespace Mtf.Network
             _ = response.AppendLine();
         }
 
-        private static void ReadDefaultType(byte[] data, ref int index, SnmpTypes type, StringBuilder response)
+        private static void ReadDefaultType(byte[] data, ref int index, SnmpType type, StringBuilder response)
         {
             var length = GetLength(data, ref index);
             _ = response.AppendLine($"Unknown type ({type})")

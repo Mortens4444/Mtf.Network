@@ -49,12 +49,12 @@ namespace Mtf.Network.Models
             packet[index++] = (byte)(packetLength - 2);
 
             // SNMP Version
-            packet[index++] = (byte)SnmpTypes.Gauge;
+            packet[index++] = (byte)SnmpType.Integer32;
             packet[index++] = 0x01;
             packet[index++] = snmpVersion;
 
             // Community
-            packet[index++] = (byte)SnmpTypes.Gauge;
+            packet[index++] = (byte)SnmpType.Integer32;
             packet[index++] = (byte)communityBytes.Length;
             Array.Copy(communityBytes, 0, packet, index, communityBytes.Length);
             index += communityBytes.Length;
@@ -67,12 +67,12 @@ namespace Mtf.Network.Models
             AddInteger(packet, ref index, packetId);
 
             // Error Status
-            packet[index++] = (byte)SnmpTypes.Gauge;
+            packet[index++] = (byte)SnmpType.Integer32;
             packet[index++] = 0x01;
             packet[index++] = errorStatus;
 
             // Error Index
-            packet[index++] = (byte)SnmpTypes.Gauge;
+            packet[index++] = (byte)SnmpType.Integer32;
             packet[index++] = 0x01;
             packet[index++] = errorIndex;
 
@@ -85,13 +85,13 @@ namespace Mtf.Network.Models
             packet[index++] = (byte)(3 + oid.Length);
 
             // OID
-            packet[index++] = (byte)SnmpTypes.ObjectIdentifier;
+            packet[index++] = (byte)SnmpType.ObjectIdentifier;
             packet[index++] = (byte)(oid.Length - 1);
             Array.Copy(oid, 0, packet, index, oid.Length);
             index += oid.Length - 2;
 
             // Value: Null
-            packet[index++] = (byte)SnmpTypes.Null;
+            packet[index++] = (byte)SnmpType.Null;
             packet[index++] = 0x00;
 
             RawPacket = packet;
@@ -99,7 +99,7 @@ namespace Mtf.Network.Models
 
         private static void AddInteger(byte[] packet, ref int index, uint value)
         {
-            packet[index++] = (byte)SnmpTypes.Gauge;
+            packet[index++] = (byte)SnmpType.Integer32;
             packet[index++] = 0x04;
             packet[index++] = (byte)(value >> 24);
             packet[index++] = (byte)(value >> 16);
