@@ -15,6 +15,7 @@ namespace Mtf.Network
         public UpnpClient(string serverHost = "239.255.255.250", ushort listenerPort = 1900)
             : base(serverHost, listenerPort, AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
         {
+            Socket.DontFragment = true;
         }
 
         /// <summary>

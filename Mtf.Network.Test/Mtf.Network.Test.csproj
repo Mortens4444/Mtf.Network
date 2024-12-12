@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mtf.Controls" Version="1.0.14" />
+    <PackageReference Include="Mtf.Controls" Version="1.0.15" />
   </ItemGroup>
 
   <ItemGroup>

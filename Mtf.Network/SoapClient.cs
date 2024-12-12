@@ -14,7 +14,18 @@ namespace Mtf.Network
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
         /// <summary>
-        /// Sends a synchronous SOAP request.
+        /// Sends a synchronous SOAP request and get the parsed response.
+        /// </summary>
+        public static string SendRequest(Uri uri, string function, string serviceId, string resultTagName = null)
+        {
+            resultTagName = resultTagName ?? serviceId;
+            var soapClient = new SoapClient();
+            var response = soapClient.SendRequest(uri, $"{function}#{serviceId}", SoapClient.CreateSoapEnvelope($"<u:{function} xmlns:u=\"{serviceId}\" />"));
+            return SoapClient.ExtractSoapResponseContent(response, $"<{resultTagName}>", $"</{resultTagName}>");
+        }
+
+        /// <summary>
+        /// Sends a synchronous SOAP request and get the full response.
         /// </summary>
         public string SendRequest(Uri uri, string soapAction, string xmlRequestBody, Dictionary<string, string> customHeaders = null)
         {
@@ -152,7 +163,7 @@ namespace Mtf.Network
         /// );
         /// </code>
         /// </example>
-        public static string ExecuteFunction(Uri uri, string serviceId, string function, string result, int timeout, params SoapParameter[] parameters)
+        public static string ExecuteFunction(Uri uri, string serviceId, string function, string result, int timeout = 30000, params SoapParameter[] parameters)
         {
             if (uri == null)
             {
