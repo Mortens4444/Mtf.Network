@@ -16,12 +16,13 @@ namespace Mtf.Network
         /// <summary>
         /// Sends a synchronous SOAP request and get the parsed response.
         /// </summary>
-        public static string SendRequest(Uri uri, string function, string serviceId, string resultTagName = null)
+        public static string SendRequest(Uri uri, string function, string serviceId, string resultTagName, params SoapParameter[] soapParameters)
         {
-            resultTagName = resultTagName ?? serviceId;
             var soapClient = new SoapClient();
-            var response = soapClient.SendRequest(uri, $"{function}#{serviceId}", SoapClient.CreateSoapEnvelope($"<u:{function} xmlns:u=\"{serviceId}\" />"));
-            return SoapClient.ExtractSoapResponseContent(response, $"<{resultTagName}>", $"</{resultTagName}>");
+            var envelopBody = CreateSoapEnvelopeBody(serviceId, serviceId, soapParameters);
+            var response = soapClient.SendRequest(uri, $"{function}#{serviceId}", CreateSoapEnvelope(envelopBody));
+            return String.IsNullOrEmpty(resultTagName) ? String.Empty
+                : SoapClient.ExtractSoapResponseContent(response, $"<{resultTagName}>", $"</{resultTagName}>");
         }
 
         /// <summary>
@@ -88,6 +89,25 @@ namespace Mtf.Network
                 .AppendLine("</soap:Envelope>");
 
             return soapEnvelope.ToString();
+        }
+
+        public static string CreateSoapEnvelopeBody(string serviceId, string function, params SoapParameter[] parameters)
+        {
+            var soapEnvelopeBody = new StringBuilder();
+            if (parameters != null && parameters.Length > 0)
+            {
+                _ = soapEnvelopeBody.Append($"<u:{function} xmlns:u=\"{serviceId}\">");
+                foreach (var parameter in parameters)
+                {
+                    _ = soapEnvelopeBody.Append($"<{parameter.Name}>{parameter.Value}</{parameter.Name}>");
+                }
+                _ = soapEnvelopeBody.Append($"</u:{function}>");
+            }
+            else
+            {
+                _ = soapEnvelopeBody.Append($"<u:{function} xmlns:u=\"{serviceId}\" />");
+            }
+            return soapEnvelopeBody.ToString();
         }
 
         /// <summary>

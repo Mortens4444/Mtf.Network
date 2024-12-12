@@ -33,6 +33,5 @@ namespace Mtf.Network
         public void NoOperation() => Send("NOOP\r\n");
 
         public void Quit() => Send("QUIT\r\n");
-
     }
 }
