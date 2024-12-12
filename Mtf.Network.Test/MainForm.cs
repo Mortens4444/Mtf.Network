@@ -2,6 +2,7 @@ using MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
+using System.Net;
 
 namespace Mtf.Network.Test
 {
@@ -463,6 +464,35 @@ namespace Mtf.Network.Test
             catch (Exception ex)
             {
                 ErrorBox.Show(ex);
+            }
+        }
+
+        private async void BtnDiscover_Click(object sender, EventArgs e)
+        {
+            lvUPnPDevices.Items.Clear();
+            var upnpClient = new UpnpClient();
+            upnpClient.DeviceDiscovered += DeviceDiscoveredHandler;
+            upnpClient.Connect();
+            await upnpClient.SendDiscoveryMessage();
+        }
+
+        private void DeviceDiscoveredHandler(object sender, DeviceDiscoveredEventArgs args)
+        {
+            if (args.Device.Manufacturer?.Equals("Pelco", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                BeginInvoke((Action)(() => { lvUPnPDevices.Items.Add(new ListViewItem(args.Device.IPAddress)); }));
+            }
+        }
+
+        private void BtnSendRequest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                rtbResult.Text = SoapClient.SendRequest(new Uri(tbSoapUri.Text), tbFunctionUrn.Text, tbServiceId.Text, tbResultTagName.Text);
+            }
+            catch (Exception ex)
+            {
+                rtbResult.Text = ex.ToString();
             }
         }
     }

@@ -21,7 +21,9 @@ namespace Mtf.Network
             var soapClient = new SoapClient();
             var envelopBody = CreateSoapEnvelopeBody(serviceId, serviceId, soapParameters);
             var response = soapClient.SendRequest(uri, $"{function}#{serviceId}", CreateSoapEnvelope(envelopBody));
-            return String.IsNullOrEmpty(resultTagName) ? String.Empty
+
+            return resultTagName == null ? String.Empty
+                : resultTagName == String.Empty ? response
                 : SoapClient.ExtractSoapResponseContent(response, $"<{resultTagName}>", $"</{resultTagName}>");
         }
 
