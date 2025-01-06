@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Mtf.Network</id>
-    <version>1.0.3</version>
+    <version>1.0.6</version>
     <description>
       TCP-based clients are designed to help understand the basics of network communication. These clients do not encrypt the data they send. I recommend not using them in commercial applications.
 
@@ -14,7 +14,7 @@
     <copyright>Copyright © 2024</copyright>
 	<license type="expression">MIT</license>
 	<projectUrl>https://github.com/Mortens4444/Mtf.Network</projectUrl>
-    <repository type="git" url="https://github.com/Mortens4444/Mtf.Network.git" branch="main" commit="2f98fa9047349882fac304db96064caf251b9749" />
+    <repository type="git" url="https://github.com/Mortens4444/Mtf.Network.git" branch="main" />
 	<tags>FtpClient HttpClient Pop3Client SmtpClient PipeClient SnmpClient SoapClient TelnetClient UpnpClient Mortens</tags>
 	<readme>docs\ReadMe.md</readme>
     <dependencies>

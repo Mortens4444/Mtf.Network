@@ -31,7 +31,6 @@ namespace Mtf.Network
         /// </summary>
         public void Stop()
         {
-            CancellationTokenSource?.Cancel();
             NetUtils.CloseSocket(Socket);
         }
 

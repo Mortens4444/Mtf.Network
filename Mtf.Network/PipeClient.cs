@@ -151,7 +151,6 @@ namespace Mtf.Network
 
         protected override void DisposeManagedResources()
         {
-            StopListening();
             Disconnect();
         }
     }

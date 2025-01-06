@@ -68,12 +68,6 @@ namespace Mtf.Network
         /// </summary>
         public void Disconnect()
         {
-            if (CancellationTokenSource != null)
-            {
-                CancellationTokenSource.Cancel();
-                CancellationTokenSource.Dispose();
-                CancellationTokenSource = null;
-            }
             if (NetUtils.IsSocketConnected(socket))
             {
                 NetUtils.CloseSocket(socket);

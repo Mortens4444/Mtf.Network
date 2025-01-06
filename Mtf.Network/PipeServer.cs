@@ -114,7 +114,6 @@ namespace Mtf.Network
 
         protected override void DisposeManagedResources()
         {
-            Stop();
             StopWriter();
         }
     }

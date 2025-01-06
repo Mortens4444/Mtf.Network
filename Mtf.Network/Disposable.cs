@@ -29,6 +29,7 @@ namespace Mtf.Network
 
             if (disposing)
             {
+                CancellationTokenSource?.Cancel();
                 CancellationTokenSource?.Dispose();
                 CancellationTokenSource = null;
                 DisposeManagedResources();

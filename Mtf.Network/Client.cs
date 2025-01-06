@@ -46,7 +46,6 @@ namespace Mtf.Network
 
         protected override void DisposeManagedResources()
         {
-            CancellationTokenSource.Cancel();
             NetUtils.CloseSocket(Socket);
             Socket = null;
         }
