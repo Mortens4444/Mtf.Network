@@ -2,7 +2,6 @@ using MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
-using System.Net;
 
 namespace Mtf.Network.Test
 {
@@ -38,11 +37,10 @@ namespace Mtf.Network.Test
 
         private void DataArrivedEventHandler(object? sender, DataArrivedEventArgs e)
         {
-            Invoke(() =>
+            Invoke(async () =>
             {
                 rtbServerReceivedMessages.AppendText($"{server?.Encoding.GetString(e.Data)}");
-                server?.Send(e.Socket, rtbSendToClient.Text);
-                rtbSendToClient.Text = String.Empty;
+                await SendToClient();
             });
         }
 
@@ -58,10 +56,16 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void BtnSendToClient_Click(object sender, EventArgs e)
+        private async void BtnSendToClient_Click(object sender, EventArgs e)
+        {
+            await SendToClient();
+        }
+
+        private async Task SendToClient()
         {
             if (server != null)
             {
+                await Task.Delay(50);
                 server.SendMessageToAllClients(rtbSendToClient.Text);
                 rtbSendToClient.Text = String.Empty;
             }

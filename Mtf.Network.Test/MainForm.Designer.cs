@@ -325,9 +325,9 @@ namespace Mtf.Network.Test
             label1.AutoSize = true;
             label1.Location = new Point(14, 17);
             label1.Name = "label1";
-            label1.Size = new Size(29, 15);
+            label1.Size = new Size(73, 15);
             label1.TabIndex = 1;
-            label1.Text = "Port";
+            label1.Text = "Listener port";
             // 
             // nudServerListeningPort
             // 
