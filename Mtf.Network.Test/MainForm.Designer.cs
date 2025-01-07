@@ -96,6 +96,15 @@ namespace Mtf.Network.Test
             nudServerListeningPort = new NumericUpDown();
             tabPage2 = new TabPage();
             panel2 = new Panel();
+            btnSendToServer2 = new Button();
+            label24 = new Label();
+            rtbClientSend2 = new RichTextBox();
+            label25 = new Label();
+            label26 = new Label();
+            nudServerPort2 = new NumericUpDown();
+            tbServerAddress2 = new TextBox();
+            label27 = new Label();
+            rtbClientReceived2 = new RichTextBox();
             label6 = new Label();
             rtbClientSend = new RichTextBox();
             label5 = new Label();
@@ -103,7 +112,7 @@ namespace Mtf.Network.Test
             nudServerPort = new NumericUpDown();
             tbServerAddress = new TextBox();
             label3 = new Label();
-            btnSend = new Button();
+            btnSendToServer = new Button();
             rtbClientReceived = new RichTextBox();
             tabPage3 = new TabPage();
             btnSendFtpCommand = new Button();
@@ -176,6 +185,7 @@ namespace Mtf.Network.Test
             ((System.ComponentModel.ISupportInitialize)nudServerListeningPort).BeginInit();
             tabPage2.SuspendLayout();
             panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudServerPort2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudServerPort).BeginInit();
             tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudFtpPort).BeginInit();
@@ -342,6 +352,15 @@ namespace Mtf.Network.Test
             // panel2
             // 
             panel2.BackColor = Color.Gray;
+            panel2.Controls.Add(btnSendToServer2);
+            panel2.Controls.Add(label24);
+            panel2.Controls.Add(rtbClientSend2);
+            panel2.Controls.Add(label25);
+            panel2.Controls.Add(label26);
+            panel2.Controls.Add(nudServerPort2);
+            panel2.Controls.Add(tbServerAddress2);
+            panel2.Controls.Add(label27);
+            panel2.Controls.Add(rtbClientReceived2);
             panel2.Controls.Add(label6);
             panel2.Controls.Add(rtbClientSend);
             panel2.Controls.Add(label5);
@@ -349,13 +368,98 @@ namespace Mtf.Network.Test
             panel2.Controls.Add(nudServerPort);
             panel2.Controls.Add(tbServerAddress);
             panel2.Controls.Add(label3);
-            panel2.Controls.Add(btnSend);
+            panel2.Controls.Add(btnSendToServer);
             panel2.Controls.Add(rtbClientReceived);
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(3, 3);
             panel2.Name = "panel2";
             panel2.Size = new Size(817, 374);
             panel2.TabIndex = 0;
+            // 
+            // btnSendToServer2
+            // 
+            btnSendToServer2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSendToServer2.Location = new Point(729, 346);
+            btnSendToServer2.Name = "btnSendToServer2";
+            btnSendToServer2.Size = new Size(75, 23);
+            btnSendToServer2.TabIndex = 17;
+            btnSendToServer2.Text = "Send";
+            btnSendToServer2.UseVisualStyleBackColor = true;
+            btnSendToServer2.Click += BtnSendToServer2_Click;
+            // 
+            // label24
+            // 
+            label24.AutoSize = true;
+            label24.Location = new Point(401, 54);
+            label24.Name = "label24";
+            label24.Size = new Size(95, 15);
+            label24.TabIndex = 16;
+            label24.Text = "Message to send";
+            // 
+            // rtbClientSend2
+            // 
+            rtbClientSend2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            rtbClientSend2.BackColor = Color.Silver;
+            rtbClientSend2.Location = new Point(401, 72);
+            rtbClientSend2.Name = "rtbClientSend2";
+            rtbClientSend2.Size = new Size(403, 102);
+            rtbClientSend2.TabIndex = 15;
+            rtbClientSend2.Text = "Hello from Client #2";
+            // 
+            // label25
+            // 
+            label25.AutoSize = true;
+            label25.Location = new Point(401, 181);
+            label25.Name = "label25";
+            label25.Size = new Size(100, 15);
+            label25.TabIndex = 14;
+            label25.Text = "Message received";
+            // 
+            // label26
+            // 
+            label26.AutoSize = true;
+            label26.Location = new Point(501, 11);
+            label26.Name = "label26";
+            label26.Size = new Size(29, 15);
+            label26.TabIndex = 13;
+            label26.Text = "Port";
+            // 
+            // nudServerPort2
+            // 
+            nudServerPort2.Location = new Point(501, 29);
+            nudServerPort2.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            nudServerPort2.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            nudServerPort2.Name = "nudServerPort2";
+            nudServerPort2.Size = new Size(77, 23);
+            nudServerPort2.TabIndex = 12;
+            nudServerPort2.Value = new decimal(new int[] { 4525, 0, 0, 0 });
+            // 
+            // tbServerAddress2
+            // 
+            tbServerAddress2.Location = new Point(401, 29);
+            tbServerAddress2.Name = "tbServerAddress2";
+            tbServerAddress2.Size = new Size(94, 23);
+            tbServerAddress2.TabIndex = 11;
+            tbServerAddress2.Text = "127.0.0.1";
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new Point(401, 11);
+            label27.Name = "label27";
+            label27.Size = new Size(39, 15);
+            label27.TabIndex = 10;
+            label27.Text = "Server";
+            // 
+            // rtbClientReceived2
+            // 
+            rtbClientReceived2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbClientReceived2.BackColor = Color.Silver;
+            rtbClientReceived2.Location = new Point(401, 199);
+            rtbClientReceived2.Name = "rtbClientReceived2";
+            rtbClientReceived2.Size = new Size(403, 141);
+            rtbClientReceived2.TabIndex = 9;
+            rtbClientReceived2.Text = "";
             // 
             // label6
             // 
@@ -368,13 +472,12 @@ namespace Mtf.Network.Test
             // 
             // rtbClientSend
             // 
-            rtbClientSend.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             rtbClientSend.BackColor = Color.Silver;
             rtbClientSend.Location = new Point(14, 72);
             rtbClientSend.Name = "rtbClientSend";
-            rtbClientSend.Size = new Size(790, 102);
+            rtbClientSend.Size = new Size(381, 102);
             rtbClientSend.TabIndex = 7;
-            rtbClientSend.Text = "Hello from Client";
+            rtbClientSend.Text = "Hello from Client #1";
             // 
             // label5
             // 
@@ -421,24 +524,24 @@ namespace Mtf.Network.Test
             label3.TabIndex = 2;
             label3.Text = "Server";
             // 
-            // btnSend
+            // btnSendToServer
             // 
-            btnSend.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnSend.Location = new Point(729, 346);
-            btnSend.Name = "btnSend";
-            btnSend.Size = new Size(75, 23);
-            btnSend.TabIndex = 1;
-            btnSend.Text = "Send";
-            btnSend.UseVisualStyleBackColor = true;
-            btnSend.Click += BtnSendToServer_Click;
+            btnSendToServer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnSendToServer.Location = new Point(320, 346);
+            btnSendToServer.Name = "btnSendToServer";
+            btnSendToServer.Size = new Size(75, 23);
+            btnSendToServer.TabIndex = 1;
+            btnSendToServer.Text = "Send";
+            btnSendToServer.UseVisualStyleBackColor = true;
+            btnSendToServer.Click += BtnSendToServer_Click;
             // 
             // rtbClientReceived
             // 
-            rtbClientReceived.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbClientReceived.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             rtbClientReceived.BackColor = Color.Silver;
             rtbClientReceived.Location = new Point(14, 199);
             rtbClientReceived.Name = "rtbClientReceived";
-            rtbClientReceived.Size = new Size(790, 141);
+            rtbClientReceived.Size = new Size(381, 141);
             rtbClientReceived.TabIndex = 0;
             rtbClientReceived.Text = "";
             // 
@@ -1120,6 +1223,7 @@ namespace Mtf.Network.Test
             tabPage2.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudServerPort2).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudServerPort).EndInit();
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
@@ -1157,7 +1261,7 @@ namespace Mtf.Network.Test
         private Label label2;
         private TextBox tbServerAddress;
         private Label label3;
-        private Button btnSend;
+        private Button btnSendToServer;
         private RichTextBox rtbClientReceived;
         private Label label4;
         private NumericUpDown nudServerPort;
@@ -1232,5 +1336,14 @@ namespace Mtf.Network.Test
         private TextBox tbServiceId;
         private Label label22;
         private RichTextBox rtbResult;
+        private Label label24;
+        private RichTextBox rtbClientSend2;
+        private Label label25;
+        private Label label26;
+        private NumericUpDown nudServerPort2;
+        private TextBox tbServerAddress2;
+        private Label label27;
+        private RichTextBox rtbClientReceived2;
+        private Button btnSendToServer2;
     }
 }

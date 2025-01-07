@@ -1,6 +1,7 @@
 ﻿using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,6 +11,8 @@ namespace Mtf.Network
 {
     public class Server : Communicator
     {
+        private readonly ConcurrentDictionary<Socket, string> connectedClients = new ConcurrentDictionary<Socket, string>();
+
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork, SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp,
             ushort listenerPort = 0) : base(addressFamily, socketType, protocolType, listenerPort)
         {
@@ -43,10 +46,6 @@ namespace Mtf.Network
         {
             return base.GetHashCode();
         }
-        protected override void DisposeManagedResources()
-        {
-            Stop();
-        }
 
         private void Initialize(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
         {
@@ -69,6 +68,7 @@ namespace Mtf.Network
             };
 
             state.ReadFromSocket(ServerReadCallback);
+            connectedClients.TryAdd(state.Socket, state.Socket.RemoteEndPoint.ToString());
         }
 
         private void ServerReadCallback(IAsyncResult ar)
@@ -86,6 +86,7 @@ namespace Mtf.Network
                 }
                 else
                 {
+                    connectedClients.TryRemove(state.Socket, out _);
                     state.Socket.Close();
                 }
             }
@@ -100,6 +101,31 @@ namespace Mtf.Network
                     _ = Socket.BeginAccept(new AsyncCallback(AcceptCallback), Socket);
                 }
             }
+        }
+
+        protected override void DisposeManagedResources()
+        {
+            Stop();
+            foreach (var client in connectedClients.Keys)
+            {
+                NetUtils.CloseSocket(client);
+            }
+            connectedClients.Clear();
+        }
+
+        public void SendMessageToAllClients(string message)
+        {
+            var data = Encoding.GetBytes(message);
+            foreach (var clientSocket in connectedClients.Keys)
+            {
+                Send(clientSocket, data);
+            }
+        }
+
+        public void SendMessageToClient(Socket clientSocket, string message)
+        {
+            var data = Encoding.GetBytes(message);
+            Send(clientSocket, data);
         }
     }
 }

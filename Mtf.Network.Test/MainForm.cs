@@ -10,6 +10,7 @@ namespace Mtf.Network.Test
     {
         private Server? server;
         private Client client;
+        private Client client2;
         private FtpClient ftpClient;
         private TelnetClient telnetClient;
         private SmtpClient smtpClient;
@@ -61,7 +62,7 @@ namespace Mtf.Network.Test
         {
             if (server != null)
             {
-                server.Send(rtbSendToClient.Text);
+                server.SendMessageToAllClients(rtbSendToClient.Text);
                 rtbSendToClient.Text = String.Empty;
             }
         }
@@ -85,11 +86,39 @@ namespace Mtf.Network.Test
             }
         }
 
+
+        private void BtnSendToServer2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (client2 == null)
+                {
+                    client2 = new Client(tbServerAddress.Text, (ushort)nudServerPort2.Value);
+                    client2.DataArrived += ClientDataArrivedEventHandler2;
+                }
+                client2.Connect();
+                client2.Send(rtbClientSend2.Text);
+                rtbClientSend2.Text = String.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+        }
+
         private void ClientDataArrivedEventHandler(object? sender, DataArrivedEventArgs e)
         {
             Invoke(() =>
             {
                 rtbClientReceived.AppendText($"{client?.Encoding.GetString(e.Data)}");
+            });
+        }
+
+        private void ClientDataArrivedEventHandler2(object? sender, DataArrivedEventArgs e)
+        {
+            Invoke(() =>
+            {
+                rtbClientReceived2.AppendText($"{client2?.Encoding.GetString(e.Data)}");
             });
         }
 

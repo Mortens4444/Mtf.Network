@@ -26,14 +26,17 @@ namespace Mtf.Network
 
         public void Connect()
         {
-            CancellationTokenSource = new CancellationTokenSource();
-            var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
-            if (!result.AsyncWaitHandle.WaitOne(Constants.SocketConnectionTimeout))
+            if (!Socket.Connected)
             {
-                throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer);
-            }
+                CancellationTokenSource = new CancellationTokenSource();
+                var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
+                if (!result.AsyncWaitHandle.WaitOne(Constants.SocketConnectionTimeout))
+                {
+                    throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer);
+                }
 
-            _ = Task.Run(Receiver);
+                _ = Task.Run(Receiver);
+            }
         }
 
         public void Send(string message, bool appendNewLine = false)
