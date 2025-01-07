@@ -30,6 +30,8 @@ namespace Mtf.Network.Test
                 server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
                 server.DataArrived += DataArrivedEventHandler;
                 server.Start();
+                btnStopServer.Enabled = true;
+                btnStartServer.Enabled = false;
             }
         }
 
@@ -50,6 +52,8 @@ namespace Mtf.Network.Test
                 server.Stop();
                 server.Dispose();
                 server = null;
+                btnStopServer.Enabled = true;
+                btnStartServer.Enabled = true;
             }
         }
 
