@@ -81,7 +81,7 @@ namespace Mtf.Network
                 {
                     var bytes = new byte[read];
                     Array.Copy(state.Buffer, 0, bytes, 0, read);
-                    OnDataArrived(Socket, bytes);
+                    OnDataArrived(state.Socket, bytes);
                     state.ReadFromSocket(ServerReadCallback);
                 }
                 else
