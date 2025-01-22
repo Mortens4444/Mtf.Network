@@ -54,8 +54,8 @@ namespace Mtf.Network.Services
 
         public static int GetFreePort()
         {
-            var rnd = new Random(Environment.TickCount);
             int port;
+            var rnd = new Random(Environment.TickCount);
 
             do
             {
@@ -68,17 +68,17 @@ namespace Mtf.Network.Services
 
         public static bool IsPortAvailable(int port)
         {
-            var igp = IPGlobalProperties.GetIPGlobalProperties();
-            var tcpConnections = igp.GetActiveTcpConnections();
-
-            foreach (var connection in tcpConnections)
+            try
             {
-                if (connection.LocalEndPoint.Port == port)
-                {
-                    return false;
-                }
+                var listener = new TcpListener(IPAddress.Loopback, port);
+                listener.Start();
+                listener.Stop();
+                return true;
             }
-            return true;
+            catch (SocketException)
+            {
+                return false;
+            }
         }
 
         public static string FormatIPEndPoint(IPEndPoint ipEndPoint)
