@@ -32,27 +32,59 @@ namespace Mtf.Network
 
         public ushort ListenerPortOfServer { get; set; }
 
-        public bool Send(string message)
+        protected int BufferSize { get; set; } = Constants.MaxBufferSize;
+
+        public void SetBufferSize(int bufferSize = Constants.MaxBufferSize)
         {
-            return Send(Socket, Encoding.GetBytes(message));
+            BufferSize = bufferSize;
+            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, bufferSize);
+            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, bufferSize);
         }
 
-        public bool Send(byte[] bytes)
+        public bool Send(string message, bool appendNewLine = false)
         {
-            return Send(Socket, bytes);
+            var messageToSend = TransformMessage(message, appendNewLine);
+            var result = Send(Socket, messageToSend);
+            if (result)
+            {
+                OnMessageSent(messageToSend);
+            }
+            return result;
         }
 
-        public bool Send(Socket socket, string message)
+        public bool Send(byte[] bytes, bool appendNewLine = false)
         {
-            return Send(socket, Encoding.GetBytes(message));
+            try
+            {
+                Send(Socket, bytes);
+                if (appendNewLine)
+                {
+                    Socket.Send(Encoding.GetBytes(Environment.NewLine));
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
-        public static bool Send(Socket socket, byte[] bytes)
+        public bool Send(Socket socket, string message, bool appendNewLine = false)
+        {
+            return Send(socket, ConvertMessageToData(message, appendNewLine));
+        }
+
+        public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false)
         {
             var success = false;
             if (socket?.Connected ?? false)
             {
                 success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
+                if (success && appendNewLine)
+                {
+                    var enterBytes = Encoding.GetBytes(Environment.NewLine);
+                    success &= socket.Send(enterBytes) == enterBytes.Length;
+                }
             }
             return success;
         }
@@ -89,6 +121,27 @@ namespace Mtf.Network
             {
                 NetUtils.CloseSocket(Socket);
             }
+        }
+
+        protected string TransformMessage(string message, bool appendNewLine)
+        {
+            return appendNewLine ? String.Concat(message, Environment.NewLine) : message;
+        }
+
+        protected byte[] ConvertMessageToData(string message, bool appendNewLine)
+        {
+            var messageToSend = TransformMessage(message, appendNewLine);
+            return Encoding.GetBytes(messageToSend);
+        }
+
+        public override string ToString()
+        {
+            if (Socket == null)
+            {
+                return "Not listening...";
+            }
+
+            return $"{Socket.LocalEndPoint}";
         }
     }
 }

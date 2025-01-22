@@ -39,14 +39,6 @@ namespace Mtf.Network
             }
         }
 
-        public void Send(string message, bool appendNewLine = false)
-        {
-            var messageToSend = appendNewLine ? String.Concat(message, Environment.NewLine) : message;
-            var data = Encoding.GetBytes(messageToSend);
-            _ = Send(data);
-            OnMessageSent(messageToSend);
-        }
-
         protected override void DisposeManagedResources()
         {
             NetUtils.CloseSocket(Socket);
@@ -59,8 +51,7 @@ namespace Mtf.Network
             {
                 DontFragment = true
             };
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, Constants.MaxBufferSize);
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, Constants.MaxBufferSize);
+            SetBufferSize();
             if (protocolType != ProtocolType.Udp)
             {
                 Socket.NoDelay = true;
@@ -71,7 +62,7 @@ namespace Mtf.Network
         {
             using (var receiveEventArgs = new SocketAsyncEventArgs())
             {
-                var receiveBuffer = new byte[Constants.MaxBufferSize];
+                var receiveBuffer = new byte[BufferSize];
                 receiveEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
 
                 while (!CancellationTokenSource.Token.IsCancellationRequested && NetUtils.IsSocketConnected(Socket))

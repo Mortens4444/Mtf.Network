@@ -7,7 +7,7 @@ namespace Mtf.Network.Models
     {
         public Socket Socket { get; set; }
 
-        public byte[] Buffer { get; set; } = new byte[Constants.MaxBufferSize];
+        public byte[] Buffer { get; set; }
 
         public void ReadFromSocket(AsyncCallback asyncCallback)
         {

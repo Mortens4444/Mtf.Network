@@ -55,8 +55,7 @@ namespace Mtf.Network
                 ListenerPortOfServer = (ushort)((IPEndPoint)Socket.LocalEndPoint).Port;
             }
 
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, Constants.MaxBufferSize);
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, Constants.MaxBufferSize);
+            SetBufferSize();
             SetSocketTimeout(Socket, Constants.SocketConnectionTimeout);
         }
 
@@ -64,7 +63,8 @@ namespace Mtf.Network
         {
             var state = new StateObject
             {
-                Socket = ((Socket)ar.AsyncState).EndAccept(ar)
+                Socket = ((Socket)ar.AsyncState).EndAccept(ar),
+                Buffer = new byte[BufferSize]
             };
 
             state.ReadFromSocket(ServerReadCallback);
@@ -113,19 +113,23 @@ namespace Mtf.Network
             connectedClients.Clear();
         }
 
-        public void SendMessageToAllClients(string message)
+        public void SendBytesToAllClients(byte[] data, bool appendNewLine = false)
         {
-            var data = Encoding.GetBytes(message);
             foreach (var clientSocket in connectedClients.Keys)
             {
-                Send(clientSocket, data);
+                Send(clientSocket, data, appendNewLine);
             }
         }
 
-        public void SendMessageToClient(Socket clientSocket, string message)
+        public void SendMessageToAllClients(string message, bool appendNewLine = false)
+        {
+            SendBytesToAllClients(ConvertMessageToData(message, appendNewLine));
+        }
+
+        public void SendMessageToClient(Socket clientSocket, string message, bool appendNewLine = false)
         {
             var data = Encoding.GetBytes(message);
-            Send(clientSocket, data);
+            Send(clientSocket, data, appendNewLine);
         }
     }
 }

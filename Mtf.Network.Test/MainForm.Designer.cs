@@ -85,6 +85,7 @@ namespace Mtf.Network.Test
             tabControl = new TabControl();
             tabPage1 = new TabPage();
             panel1 = new Panel();
+            lblServer = new Label();
             btnSendToClient = new Button();
             label7 = new Label();
             rtbSendToClient = new RichTextBox();
@@ -232,6 +233,7 @@ namespace Mtf.Network.Test
             // panel1
             // 
             panel1.BackColor = Color.Gray;
+            panel1.Controls.Add(lblServer);
             panel1.Controls.Add(btnSendToClient);
             panel1.Controls.Add(label7);
             panel1.Controls.Add(rtbSendToClient);
@@ -246,6 +248,14 @@ namespace Mtf.Network.Test
             panel1.Name = "panel1";
             panel1.Size = new Size(817, 374);
             panel1.TabIndex = 0;
+            // 
+            // lblServer
+            // 
+            lblServer.AutoSize = true;
+            lblServer.Location = new Point(97, 37);
+            lblServer.Name = "lblServer";
+            lblServer.Size = new Size(0, 15);
+            lblServer.TabIndex = 9;
             // 
             // btnSendToClient
             // 
@@ -640,7 +650,7 @@ namespace Mtf.Network.Test
             // 
             fileBrowserView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             fileBrowserView1.BackColor = Color.Silver;
-            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem1, listViewItem2, listViewItem3, listViewItem4, listViewItem5, listViewItem6, listViewItem7, listViewItem8, listViewItem9, listViewItem10, listViewItem11, listViewItem12, listViewItem13, listViewItem14, listViewItem15, listViewItem16, listViewItem17, listViewItem18, listViewItem19, listViewItem20, listViewItem21, listViewItem22, listViewItem23, listViewItem24, listViewItem25, listViewItem26, listViewItem27, listViewItem28, listViewItem29, listViewItem30, listViewItem31, listViewItem32, listViewItem33, listViewItem34, listViewItem35, listViewItem36, listViewItem37, listViewItem38, listViewItem39, listViewItem40, listViewItem41, listViewItem42, listViewItem43, listViewItem44, listViewItem45, listViewItem46, listViewItem47, listViewItem48, listViewItem49, listViewItem50, listViewItem51, listViewItem52 });
+            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem53, listViewItem54, listViewItem55, listViewItem56, listViewItem57, listViewItem58, listViewItem59, listViewItem60, listViewItem61, listViewItem62, listViewItem63, listViewItem64, listViewItem65, listViewItem66, listViewItem67, listViewItem68, listViewItem69, listViewItem70, listViewItem71, listViewItem72, listViewItem73, listViewItem74, listViewItem75, listViewItem76, listViewItem77, listViewItem78, listViewItem79, listViewItem80, listViewItem81, listViewItem82, listViewItem83, listViewItem84, listViewItem85, listViewItem86, listViewItem87, listViewItem88, listViewItem89, listViewItem90, listViewItem91, listViewItem92, listViewItem93, listViewItem94, listViewItem95, listViewItem96, listViewItem97, listViewItem98, listViewItem99, listViewItem100, listViewItem101, listViewItem102, listViewItem103, listViewItem104 });
             fileBrowserView1.Location = new Point(8, 92);
             fileBrowserView1.Name = "fileBrowserView1";
             fileBrowserView1.Size = new Size(534, 280);
@@ -1345,5 +1355,6 @@ namespace Mtf.Network.Test
         private Label label27;
         private RichTextBox rtbClientReceived2;
         private Button btnSendToServer2;
+        private Label lblServer;
     }
 }

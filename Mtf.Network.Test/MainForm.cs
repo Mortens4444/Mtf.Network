@@ -31,6 +31,7 @@ namespace Mtf.Network.Test
                 server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
                 server.DataArrived += DataArrivedEventHandler;
                 server.Start();
+                lblServer.Text = server.ToString();
                 btnStopServer.Enabled = true;
                 btnStartServer.Enabled = false;
             }
