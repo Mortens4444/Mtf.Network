@@ -56,7 +56,6 @@ namespace Mtf.Network
             }
 
             SetBufferSize();
-            SetSocketTimeout(Socket, Constants.SocketConnectionTimeout);
         }
 
         private void AcceptCallback(IAsyncResult ar)

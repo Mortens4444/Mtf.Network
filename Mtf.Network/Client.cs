@@ -3,7 +3,6 @@ using Mtf.Network.Services;
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,12 +16,12 @@ namespace Mtf.Network
         {
             ServerHostnameOrIPAddress = serverHost;
             CreateSocket(addressFamily, socketType, protocolType);
-            SetSocketTimeout(Socket, Constants.SocketConnectionTimeout);
         }
 
         public string ServerHostnameOrIPAddress { get; set; }
 
         public int ListenerPortOfClient => ((IPEndPoint)Socket.LocalEndPoint)?.Port ?? Constants.NotFound;
+        private Task receiverTask;
 
         public void Connect()
         {
@@ -35,14 +34,26 @@ namespace Mtf.Network
                     throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer);
                 }
 
-                _ = Task.Run(Receiver);
+                receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);
+            }
+        }
+
+        public void Disconnect()
+        {
+            if (Socket.Connected)
+            {
+                Socket.Disconnect(true);
             }
         }
 
         protected override void DisposeManagedResources()
         {
-            NetUtils.CloseSocket(Socket);
-            Socket = null;
+            if (receiverTask != null)
+            {
+                var disposeTask = Task.WhenAny(receiverTask, Task.Delay(Constants.DisposeTimeout));
+                disposeTask.Wait();
+            }
+            base.DisposeManagedResources();
         }
 
         private void CreateSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
@@ -58,46 +69,30 @@ namespace Mtf.Network
             }
         }
 
-        private async Task Receiver()
+        private void Receiver()
         {
-            using (var receiveEventArgs = new SocketAsyncEventArgs())
+            if (Socket == null)
             {
-                var receiveBuffer = new byte[BufferSize];
-                receiveEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
+                throw new InvalidOperationException("Socket is not initialized.");
+            }
 
-                while (!CancellationTokenSource.Token.IsCancellationRequested && NetUtils.IsSocketConnected(Socket))
+            var receiveBuffer = new byte[BufferSize];
+            while (NetUtils.IsSocketConnected(Socket))
+            {
+                try
                 {
-                    var taskCompletionSource = new TaskCompletionSource<int>();
-
-                    void completedHandler(object s, SocketAsyncEventArgs e)
+                    var num = Socket.Receive(receiveBuffer, receiveBuffer.Length, SocketFlags.None);
+                    if (num > 0)
                     {
-                        _ = e.SocketError == SocketError.Success
-                            ? taskCompletionSource.TrySetResult(e.BytesTransferred)
-                            : taskCompletionSource.TrySetException(new SocketException((int)e.SocketError));
+                        var receivedData = new byte[num];
+                        Array.Copy(receiveBuffer, receivedData, num);
+                        OnDataArrived(Socket, receivedData);
                     }
-                    receiveEventArgs.Completed += completedHandler;
-                    try
-                    {
-                        if (!Socket.ReceiveAsync(receiveEventArgs))
-                        {
-                            taskCompletionSource.SetResult(receiveEventArgs.BytesTransferred);
-                        }
-
-                        var readBytes = await taskCompletionSource.Task.ConfigureAwait(false);
-
-                        if (readBytes > 0)
-                        {
-                            var data = new byte[readBytes];
-                            Array.Copy(receiveBuffer, data, readBytes);
-                            OnDataArrived(Socket, data);
-                        }
-
-                        await Task.Delay(1).ConfigureAwait(false);
-                    }
-                    finally
-                    {
-                        receiveEventArgs.Completed -= completedHandler;
-                    }
+                }
+                catch (SocketException ex)
+                {
+                    OnErrorOccurred(ex);
+                    break;
                 }
             }
         }

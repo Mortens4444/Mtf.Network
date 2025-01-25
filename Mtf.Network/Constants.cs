@@ -9,5 +9,7 @@
         public const int MaxPendingConnections = 10;
 
         public const int NotFound = -1;
+
+        public const int DisposeTimeout = 3000;
     }
 }

@@ -41,6 +41,16 @@ namespace Mtf.Network
             Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, bufferSize);
         }
 
+        /// <summary>
+        /// A value that specifies the amount of time after which a synchronous Overload:System.Net.Sockets.Socket.Send call will time out.
+        /// </summary>
+        /// <param name="value">The time-out value, in milliseconds. If you set the property with a value between 1 and 499, the value will be changed to 500.
+        /// The default value is 0, which indicates an infinite time-out period. Specifying -1 also indicates an infinite time-out period.</param>
+        public void SetTimeout(int value = 0)
+        {
+            SetSocketTimeout(Socket, value);
+        }
+
         public bool Send(string message, bool appendNewLine = false)
         {
             var messageToSend = TransformMessage(message, appendNewLine);
@@ -120,6 +130,7 @@ namespace Mtf.Network
             if (NetUtils.IsSocketConnected(Socket))
             {
                 NetUtils.CloseSocket(Socket);
+                Socket = null;
             }
         }
 
