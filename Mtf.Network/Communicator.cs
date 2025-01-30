@@ -1,4 +1,5 @@
-﻿using Mtf.Network.EventArg;
+﻿using Microsoft.Extensions.Logging;
+using Mtf.Network.EventArg;
 using Mtf.Network.Services;
 using System;
 using System.Net.Sockets;
@@ -12,13 +13,18 @@ namespace Mtf.Network
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
         public event EventHandler<MessageEventArgs> MessageSent;
 
+        protected readonly Action<ILogger, Communicator, string, Exception> logErrorAction;
+
         public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer)
         {
             ListenerPortOfServer = listenerPortOfServer;
             AddressFamily = addressFamily;
             SocketType = socketType;
             ProtocolType = protocolType;
+            logErrorAction = LoggerMessage.Define<Communicator, string>(LogLevel.Error, new EventId(1, "SerialDevice"), "Error occurred in communicator: {Device}, {EventDetails}");
         }
+
+        public ILogger Logger { get; set; }
 
         public AddressFamily AddressFamily { get; private set; }
 

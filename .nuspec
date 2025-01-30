@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Mtf.Network</id>
-    <version>1.0.35</version>
+    <version>1.0.37</version>
     <description>
       TCP-based clients are designed to help understand the basics of network communication. These clients do not encrypt the data they send. I recommend not using them in commercial applications.
 
@@ -18,7 +18,9 @@
 	<tags>FtpClient HttpClient Pop3Client SmtpClient PipeClient SnmpClient SoapClient TelnetClient UpnpClient WakeOnLAN Mortens</tags>
 	<readme>docs\ReadMe.md</readme>
     <dependencies>
-      <group targetFramework="netstandard2.0" />
+      <group targetFramework="netstandard2.0">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>

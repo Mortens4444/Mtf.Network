@@ -2,6 +2,7 @@
 using Mtf.Network.Services;
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -114,9 +115,20 @@ namespace Mtf.Network
 
         public void SendBytesToAllClients(byte[] data, bool appendNewLine = false)
         {
-            foreach (var clientSocket in connectedClients.Keys)
+            foreach (var clientSocket in connectedClients.Keys.ToList())
             {
-                Send(clientSocket, data, appendNewLine);
+                try
+                {
+                    Send(clientSocket, data, appendNewLine);
+                }
+                catch (Exception ex)
+                {
+                    connectedClients.TryRemove(clientSocket, out var value);
+                    if (Logger != null)
+                    {
+                        logErrorAction(Logger, this, $"Sending data failed to {value}", ex);
+                    }
+                }
             }
         }
 
