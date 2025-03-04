@@ -72,12 +72,15 @@ namespace Mtf.Network
         {
             try
             {
-                Send(Socket, bytes);
-                if (appendNewLine)
+                if (Send(Socket, bytes))
                 {
-                    Socket.Send(Encoding.GetBytes(Environment.NewLine));
+                    if (appendNewLine)
+                    {
+                        Socket.Send(Encoding.GetBytes(Environment.NewLine));
+                    }
+                    return true;
                 }
-                return true;
+                return false;
             }
             catch
             {

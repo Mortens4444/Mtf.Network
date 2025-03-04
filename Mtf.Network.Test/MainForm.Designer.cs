@@ -32,10 +32,10 @@ namespace Mtf.Network.Test
             components = new System.ComponentModel.Container();
             var listViewItem1 = new ListViewItem(new string[] { "$AV_AVG", "Folder", "" }, "folder");
             var listViewItem2 = new ListViewItem(new string[] { "$Recycle.Bin", "Folder", "" }, "folder");
-            var listViewItem3 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
-            var listViewItem4 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
-            var listViewItem5 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
-            var listViewItem6 = new ListViewItem(new string[] { "Config.Msi", "Folder", "" }, "folder");
+            var listViewItem3 = new ListViewItem(new string[] { "Adjustment Program", "Folder", "" }, "folder");
+            var listViewItem4 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
+            var listViewItem5 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
+            var listViewItem6 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
             var listViewItem7 = new ListViewItem(new string[] { "Databases", "Folder", "" }, "folder");
             var listViewItem8 = new ListViewItem(new string[] { "Depends", "Folder", "" }, "folder");
             var listViewItem9 = new ListViewItem(new string[] { "DesktopUpdater", "Folder", "" }, "folder");
@@ -79,8 +79,8 @@ namespace Mtf.Network.Test
             var listViewItem47 = new ListViewItem(new string[] { "DumpStack.log.tmp", ".TMP File", "12 kB" }, ".tmp");
             var listViewItem48 = new ListViewItem(new string[] { "hiberfil.sys", ".SYS File", "6,3 GB" }, ".sys");
             var listViewItem49 = new ListViewItem(new string[] { "Not recognized checkmate.png", ".PNG File", "66,1 kB" }, ".png");
-            var listViewItem50 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "29,1 GB" }, ".sys");
-            var listViewItem51 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "16 MB" }, ".sys");
+            var listViewItem50 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "21,3 GB" }, ".sys");
+            var listViewItem51 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "272 MB" }, ".sys");
             var listViewItem52 = new ListViewItem(new string[] { "vfcompat.dll", ".DLL File", "65,7 kB" }, ".dll");
             tabControl = new TabControl();
             tabPage1 = new TabPage();
@@ -180,6 +180,8 @@ namespace Mtf.Network.Test
             tbSoapUri = new TextBox();
             label20 = new Label();
             btnSendRequest = new Button();
+            tabPage10 = new TabPage();
+            btnSunellCameraTest = new Button();
             tabControl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -199,6 +201,7 @@ namespace Mtf.Network.Test
             tabPage7.SuspendLayout();
             tabPage8.SuspendLayout();
             tabPage9.SuspendLayout();
+            tabPage10.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl
@@ -212,6 +215,7 @@ namespace Mtf.Network.Test
             tabControl.Controls.Add(tabPage7);
             tabControl.Controls.Add(tabPage8);
             tabControl.Controls.Add(tabPage9);
+            tabControl.Controls.Add(tabPage10);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 0);
             tabControl.Name = "tabControl";
@@ -650,7 +654,8 @@ namespace Mtf.Network.Test
             // 
             fileBrowserView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             fileBrowserView1.BackColor = Color.Silver;
-            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem1, listViewItem2, listViewItem3, listViewItem4, listViewItem5, listViewItem6, listViewItem7, listViewItem8, listViewItem9, listViewItem10, listViewItem11, listViewItem12, listViewItem13, listViewItem14, listViewItem15, listViewItem16, listViewItem17, listViewItem18, listViewItem19, listViewItem20, listViewItem21, listViewItem22, listViewItem23, listViewItem24, listViewItem25, listViewItem26, listViewItem27, listViewItem28, listViewItem29, listViewItem30, listViewItem31, listViewItem32, listViewItem33, listViewItem34, listViewItem35, listViewItem36, listViewItem37, listViewItem38, listViewItem39, listViewItem40, listViewItem41, listViewItem42, listViewItem43, listViewItem44, listViewItem45, listViewItem46, listViewItem47, listViewItem48, listViewItem49, listViewItem50, listViewItem51, listViewItem52 }); fileBrowserView1.Location = new Point(8, 92);
+            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem1, listViewItem2, listViewItem3, listViewItem4, listViewItem5, listViewItem6, listViewItem7, listViewItem8, listViewItem9, listViewItem10, listViewItem11, listViewItem12, listViewItem13, listViewItem14, listViewItem15, listViewItem16, listViewItem17, listViewItem18, listViewItem19, listViewItem20, listViewItem21, listViewItem22, listViewItem23, listViewItem24, listViewItem25, listViewItem26, listViewItem27, listViewItem28, listViewItem29, listViewItem30, listViewItem31, listViewItem32, listViewItem33, listViewItem34, listViewItem35, listViewItem36, listViewItem37, listViewItem38, listViewItem39, listViewItem40, listViewItem41, listViewItem42, listViewItem43, listViewItem44, listViewItem45, listViewItem46, listViewItem47, listViewItem48, listViewItem49, listViewItem50, listViewItem51, listViewItem52 });
+            fileBrowserView1.Location = new Point(8, 92);
             fileBrowserView1.Name = "fileBrowserView1";
             fileBrowserView1.Size = new Size(534, 280);
             fileBrowserView1.TabIndex = 8;
@@ -1213,6 +1218,27 @@ namespace Mtf.Network.Test
             btnSendRequest.UseVisualStyleBackColor = true;
             btnSendRequest.Click += BtnSendRequest_Click;
             // 
+            // tabPage10
+            // 
+            tabPage10.BackColor = Color.Gray;
+            tabPage10.Controls.Add(btnSunellCameraTest);
+            tabPage10.Location = new Point(4, 24);
+            tabPage10.Name = "tabPage10";
+            tabPage10.Padding = new Padding(3);
+            tabPage10.Size = new Size(823, 380);
+            tabPage10.TabIndex = 9;
+            tabPage10.Text = "Test examples";
+            // 
+            // btnSunellCameraTest
+            // 
+            btnSunellCameraTest.Location = new Point(8, 6);
+            btnSunellCameraTest.Name = "btnSunellCameraTest";
+            btnSunellCameraTest.Size = new Size(126, 23);
+            btnSunellCameraTest.TabIndex = 0;
+            btnSunellCameraTest.Text = "Sunell camera test";
+            btnSunellCameraTest.UseVisualStyleBackColor = true;
+            btnSunellCameraTest.Click += BtnSunellCameraTest_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1251,6 +1277,7 @@ namespace Mtf.Network.Test
             tabPage8.ResumeLayout(false);
             tabPage9.ResumeLayout(false);
             tabPage9.PerformLayout();
+            tabPage10.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1355,5 +1382,7 @@ namespace Mtf.Network.Test
         private RichTextBox rtbClientReceived2;
         private Button btnSendToServer2;
         private Label lblServer;
+        private TabPage tabPage10;
+        private Button btnSunellCameraTest;
     }
 }
