@@ -1,5 +1,6 @@
 ﻿using Mtf.Network.EventArg;
 using System;
+using System.ComponentModel;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
@@ -37,7 +38,11 @@ namespace Mtf.Network
 
             try
             {
+#if NET462_OR_GREATER
                 await namedPipeClientStream.ConnectAsync(CancellationTokenSource.Token).ConfigureAwait(false);
+#else
+                namedPipeClientStream.Connect();
+#endif
             }
             catch (Exception ex)
             {

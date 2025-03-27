@@ -205,12 +205,12 @@ namespace Mtf.Network
         /// </summary>
         /// <param name="bytes">The byte array to send.</param>
         /// <returns>True, if all bytes has been sent</returns>
-        public new bool Send(byte[] bytes)
+        public bool Send(byte[] bytes)
         {
             return Send(Socket, bytes);
         }
 
-        public new bool Send(Socket socket, byte[] bytes)
+        public bool Send(Socket socket, byte[] bytes)
         {
             if (socket == null)
             {

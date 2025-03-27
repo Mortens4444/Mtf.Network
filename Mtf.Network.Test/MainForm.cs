@@ -2,11 +2,8 @@ using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
-using System.IO;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Mtf.Network.Test
 {
@@ -551,8 +548,8 @@ namespace Mtf.Network.Test
         }
 
         const string sunellCameraIp = "192.168.0.201";
-        const string sunellCameraUsername = "user";
-        const string sunellCameraPassword = "pass";
+        const string sunellCameraUsername = "admin";
+        const string sunellCameraPassword = "Tibi2025";
         const int cameraId = 1;
         const int streamId = 1;
         private Client pageClient;
@@ -607,6 +604,32 @@ namespace Mtf.Network.Test
         {
             var message = Encoding.ASCII.GetString(e.Data);
             InfoBox.Show("Data arrived to client", message);
+        }
+
+        private void BtnStartCaptureImage_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var vcc = new VideoCaptureClient(tbImageProviderIpAddress.Text, (ushort)nudImageProviderPort.Value);
+                vcc.FrameArrived += Vcc_FrameArrived;
+                vcc.Start(10000);
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
+        }
+
+        Image lastImage;
+
+        private void Vcc_FrameArrived(object? sender, FrameArrivedEventArgs e)
+        {
+            Invoke((Action)(() =>
+            {
+                lastImage?.Dispose();
+                pbVideoCaptureImage.Image = e.Frame;
+                lastImage = e.Frame;
+            }));
         }
     }
 }

@@ -2,6 +2,7 @@
 using Mtf.Network.Extensions;
 using Mtf.Network.Models;
 using System;
+using System.IO.Pipes;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -41,7 +42,7 @@ namespace Mtf.Network
             };
             if (!String.IsNullOrEmpty(device.Location))
             {
-                var response = await GetHttpWebResponseAsync(device.Location);
+                var response = await GetHttpWebResponseAsync(device.Location).ConfigureAwait(false);
                 device.Manufacturer = response.ExtractBetween("<manufacturer>", "</manufacturer>", StringComparison.OrdinalIgnoreCase);
                 device.MacAddress = response.ExtractBetween("<MAC>", "</MAC>", StringComparison.OrdinalIgnoreCase);
 
@@ -72,7 +73,12 @@ namespace Mtf.Network
         {
             var messageBytes = Encoding.GetBytes(message);
             var endPoint = new IPEndPoint(IPAddress.Parse(ServerHostnameOrIPAddress), ListenerPortOfServer);
+
+#if NET462_OR_GREATER
             _ = await Socket.SendToAsync(new ArraySegment<byte>(messageBytes), SocketFlags.None, endPoint).ConfigureAwait(false);
+#else
+            _ = Socket.SendTo(messageBytes, SocketFlags.None, endPoint);
+#endif
         }
 
         protected virtual void OnDeviceDiscovered(Device device)
@@ -86,10 +92,10 @@ namespace Mtf.Network
             {
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
 
-                var response = await httpClient.GetAsync(uri);
+                var response = await httpClient.GetAsync(uri).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadAsStringAsync();
+                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
         }
     }

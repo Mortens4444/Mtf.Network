@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Mtf.Network</id>
-    <version>1.0.38</version>
+    <version>1.0.42</version>
     <description>
       TCP-based clients are designed to help understand the basics of network communication. These clients do not encrypt the data they send. I recommend not using them in commercial applications.
 
@@ -18,12 +18,17 @@
 	<tags>FtpClient HttpClient Pop3Client SmtpClient PipeClient SnmpClient SoapClient TelnetClient UpnpClient WakeOnLAN Mortens</tags>
 	<readme>docs\ReadMe.md</readme>
     <dependencies>
+	  <group targetFramework="net452">
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.1.2" />
+	  </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.3" />
+		<dependency id="System.Drawing.Common" version="9.0.3" />
       </group>
     </dependencies>
   </metadata>
   <files>
+    <file src=".\Mtf.Network\bin\Release\net452\*.*" target="lib\net452\" />
     <file src=".\Mtf.Network\bin\Release\netstandard2.0\**" target="lib\netstandard2.0" />
 	<file src=".\ReadMe.md" target="docs\" />
   </files>

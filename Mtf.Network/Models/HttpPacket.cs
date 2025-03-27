@@ -20,6 +20,7 @@ namespace Mtf.Network.Models
             var sb = new StringBuilder();
             _ = sb.AppendLine($"{HttpMethod} {Uri.PathAndQuery} {HttpProtocol}/{(int)HttpProtocolVersion / 10}.{(int)HttpProtocolVersion % 10}");
 
+#if NET462_OR_GREATER
             foreach (var (Description, Value) in GetPropertiesWithDescriptions())
             {
                 if (!String.IsNullOrEmpty(Value))
@@ -27,6 +28,15 @@ namespace Mtf.Network.Models
                     _ = sb.AppendLine($"{Description}: {Value}");
                 }
             }
+#else
+            foreach (var tuple in GetPropertiesWithDescriptions())
+            {
+                if (!String.IsNullOrEmpty(tuple.Item2))
+                {
+                    _ = sb.AppendLine($"{tuple.Item1}: {tuple.Item2}");
+                }
+            }
+#endif
 
             if (KeepAliveConnection)
             {
@@ -185,7 +195,11 @@ namespace Mtf.Network.Models
         [Description("WWW-Authenticate")]
         public string WWWAuthenticate { get; set; } = String.Empty;
 
+#if NET462_OR_GREATER
         private IEnumerable<(string Description, string Value)> GetPropertiesWithDescriptions()
+#else
+        private IEnumerable<Tuple<string, string>> GetPropertiesWithDescriptions()
+#endif
         {
             var properties = GetType().GetProperties();
             foreach (var property in properties)
@@ -194,7 +208,11 @@ namespace Mtf.Network.Models
                 if (descriptionAttribute != null)
                 {
                     var value = property.GetValue(this)?.ToString();
+#if NET462_OR_GREATER
                     yield return (descriptionAttribute.Description, value);
+#else
+                    yield return new Tuple<string, string>(descriptionAttribute.Description, value);
+#endif
                 }
             }
         }

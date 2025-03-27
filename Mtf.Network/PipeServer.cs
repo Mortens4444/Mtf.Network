@@ -5,6 +5,7 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.ComponentModel;
 
 namespace Mtf.Network
 {
@@ -73,7 +74,11 @@ namespace Mtf.Network
                 {
                     try
                     {
+#if NET462_OR_GREATER
                         await server.WaitForConnectionAsync(token).ConfigureAwait(false);
+#else
+                        server.WaitForConnection();
+#endif
 
                         using (var reader = new StreamReader(server, Encoding))
                         {

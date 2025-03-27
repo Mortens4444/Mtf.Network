@@ -18,6 +18,8 @@ namespace Mtf.Network
             CreateSocket(addressFamily, socketType, protocolType);
         }
 
+        public int Timeout { get; set; } = Constants.SocketConnectionTimeout;
+
         public string ServerHostnameOrIPAddress { get; set; }
 
         public int ListenerPortOfClient => ((IPEndPoint)Socket.LocalEndPoint)?.Port ?? Constants.NotFound;
@@ -29,7 +31,7 @@ namespace Mtf.Network
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
-                if (!result.AsyncWaitHandle.WaitOne(Constants.SocketConnectionTimeout))
+                if (!result.AsyncWaitHandle.WaitOne(Timeout))
                 {
                     throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer);
                 }

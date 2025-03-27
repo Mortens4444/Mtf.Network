@@ -9,7 +9,7 @@ namespace Mtf.Network.Services
     public sealed class Ping : IDisposable
     {
         private const string Empty = "";
-        private int cleanup = 0;
+        private int cleanup;
         private readonly System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
         private byte[] dataToSend = Encoding.ASCII.GetBytes("ping");
 

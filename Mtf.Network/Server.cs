@@ -142,5 +142,19 @@ namespace Mtf.Network
             var data = Encoding.GetBytes(message);
             Send(clientSocket, data, appendNewLine);
         }
+
+        public void SendBytesInChunksToAllClients(byte[] data, int headerSize = 0)
+        {
+            var chunkSize = Socket.SendBufferSize - headerSize;
+            var totalParts = (int)Math.Ceiling((double)data.Length / chunkSize);
+            for (int i = 0; i < totalParts; i++)
+            {
+                var offset = i * chunkSize;
+                var partSize = Math.Min(chunkSize, data.Length - offset);
+                var partBytes = new byte[partSize];
+                Buffer.BlockCopy(data, offset, partBytes, 0, partSize);
+                SendBytesToAllClients(partBytes, true);
+            }
+        }
     }
 }
