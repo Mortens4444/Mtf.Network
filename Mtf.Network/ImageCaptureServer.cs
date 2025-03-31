@@ -7,10 +7,15 @@ namespace Mtf.Network
 {
     public class ImageCaptureServer
     {
-        private const int maxRetryCount = 3;
-        private const int fps = 25;
         private readonly IImageSource imageSource;
         private readonly string identifier;
+        private bool disposed;
+
+        public Server Server { get; set; }
+
+        public int MaxRetryCount { get; set; } = 3;
+
+        public int FPS { get; set; } = 3;
 
         public ImageCaptureServer(IImageSource imageSource, string identifier)
         {
@@ -22,56 +27,79 @@ namespace Mtf.Network
         {
             int retryCount = 0;
 
-            var server = new Server();
-            server.Start();
-            server.SetBufferSize(409600);
+            Server = new Server();
+            Server.Start();
+            Server.SetBufferSize(409600);
 
             _ = Task.Run(async () =>
             {
-                var waitTime = 1000 / fps;
-                while (retryCount < maxRetryCount)
+                var waitTime = 1000 / FPS;
+                while (retryCount < MaxRetryCount)
                 {
                     try
                     {
-                        await CaptureAndSendLoop(server, waitTime, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await CaptureAndSendLoop(waitTime, cancellationTokenSource.Token).ConfigureAwait(false);
                         break;
                     }
                     catch (Exception ex)
                     {
                         retryCount++;
-                        server.SendMessageToAllClients($"ImageSourceCreationFailure|{identifier}|{ex}", true);
+                        Server.SendMessageToAllClients($"ImageSourceCreationFailure|{identifier}|{ex}", true);
 
-                        if (retryCount < maxRetryCount)
+                        if (retryCount < MaxRetryCount)
                         {
                             await Task.Delay(2000, cancellationTokenSource.Token).ConfigureAwait(false);
                         }
                         else
                         {
-                            server.SendMessageToAllClients($"ImageSourceCreationFailure|{identifier}|Max retry attempts reached", true);
+                            Server.SendMessageToAllClients($"ImageSourceCreationFailure|{identifier}|Max retry attempts reached", true);
                         }
                     }
                 }
             }, cancellationTokenSource.Token);
 
-            return server;
+            return Server;
         }
 
-        private async Task CaptureAndSendLoop(Server server, int delay, CancellationToken token)
+        private async Task CaptureAndSendLoop(int delay, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 var imageBytes = await imageSource.CaptureAsync(token).ConfigureAwait(false);
                 if (imageBytes != null)
                 {
-                    server.SendBytesInChunksToAllClients(imageBytes);
+                    Server.SendBytesInChunksToAllClients(imageBytes);
                 }
                 else
                 {
-                    server.SendMessageToAllClients($"ImageSourceFailure|{identifier}", true);
+                    Server.SendMessageToAllClients($"ImageSourceFailure|{identifier}", true);
                 }
 
                 await Task.Delay(delay, token).ConfigureAwait(false);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    Server?.Dispose();
+                }
+                disposed = true;
+            }
+        }
+
+        ~ImageCaptureServer()
+        {
+            Dispose(false);
         }
     }
 }
