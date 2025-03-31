@@ -15,7 +15,7 @@ namespace Mtf.Network
 
         public int MaxRetryCount { get; set; } = 3;
 
-        public int FPS { get; set; } = 3;
+        public int FPS { get; set; } = 25;
 
         public ImageCaptureServer(IImageSource imageSource, string identifier)
         {
