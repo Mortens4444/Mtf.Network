@@ -13,6 +13,7 @@
     <UseWindowsForms>False</UseWindowsForms>
     <WarningLevel>9999</WarningLevel>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net452'">

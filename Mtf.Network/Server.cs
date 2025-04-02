@@ -61,34 +61,95 @@ namespace Mtf.Network
 
         private void AcceptCallback(IAsyncResult ar)
         {
+            var clientSocket = (Socket)ar.AsyncState;
             var state = new StateObject
             {
-                Socket = ((Socket)ar.AsyncState).EndAccept(ar),
+                Socket = clientSocket.EndAccept(ar),
                 Buffer = new byte[BufferSize]
             };
 
-            state.ReadFromSocket(ServerReadCallback);
-            connectedClients.TryAdd(state.Socket, state.Socket.RemoteEndPoint.ToString());
+            try
+            {
+                state.ReadFromSocket(ServerReadCallback);
+                connectedClients.TryAdd(state.Socket, state.Socket.RemoteEndPoint.ToString());
+            }
+            catch (SocketException ex)
+                when (ex.SocketErrorCode == SocketError.ConnectionReset || // WSAECONNRESET
+                    ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
+                    ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
+            {
+                Console.WriteLine($"AcceptCallback - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
+                NetUtils.CloseSocket(clientSocket);
+            }
+            catch (ObjectDisposedException)
+            {
+                Console.WriteLine($"AcceptCallback - Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AcceptCallback - Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
+                NetUtils.CloseSocket(clientSocket);
+            }
         }
 
         private void ServerReadCallback(IAsyncResult ar)
         {
-            var state = (StateObject)ar.AsyncState;
-            if (NetUtils.IsSocketConnected(state.Socket))
+            if (ar == null)
             {
-                var read = state.Socket.EndReceive(ar);
-                if (read > 0)
+                return;
+            }
+            var state = (StateObject)ar.AsyncState;
+            if (state == null)
+            {
+                return;
+            }
+
+            var clientSocket = state.Socket;
+            try
+            {
+                if (NetUtils.IsSocketConnected(clientSocket))
                 {
-                    var bytes = new byte[read];
-                    Array.Copy(state.Buffer, 0, bytes, 0, read);
-                    OnDataArrived(state.Socket, bytes);
-                    state.ReadFromSocket(ServerReadCallback);
+                    var read = clientSocket.EndReceive(ar);
+                    if (read > 0)
+                    {
+                        var bytes = new byte[read];
+                        Array.Copy(state.Buffer, 0, bytes, 0, read);
+                        OnDataArrived(clientSocket, bytes);
+                        state.ReadFromSocket(ServerReadCallback);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Client {clientSocket.RemoteEndPoint} disconnected gracefully.");
+                        connectedClients.TryRemove(clientSocket, out _);
+                        NetUtils.CloseSocket(clientSocket);
+                    }
                 }
                 else
                 {
-                    connectedClients.TryRemove(state.Socket, out _);
-                    state.Socket.Close();
+                    Console.WriteLine($"Client {clientSocket.RemoteEndPoint} detected as disconnected before EndReceive.");
+                    connectedClients.TryRemove(clientSocket, out _);
+                    NetUtils.CloseSocket(clientSocket);
                 }
+            }
+            catch (SocketException ex)
+                when (ex.SocketErrorCode == SocketError.ConnectionReset || // WSAECONNRESET
+                    ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
+                    ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
+            {
+                Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
+                connectedClients.TryRemove(clientSocket, out _);
+                NetUtils.CloseSocket(clientSocket);
+            }
+            catch (ObjectDisposedException)
+            {
+                Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
+                connectedClients.TryRemove(clientSocket, out _);
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
+                connectedClients.TryRemove(clientSocket, out _);
+                NetUtils.CloseSocket(clientSocket);
             }
         }
 
