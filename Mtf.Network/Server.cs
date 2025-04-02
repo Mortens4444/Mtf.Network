@@ -61,15 +61,19 @@ namespace Mtf.Network
 
         private void AcceptCallback(IAsyncResult ar)
         {
-            var clientSocket = (Socket)ar.AsyncState;
-            var state = new StateObject
+            if (!(ar.AsyncState is Socket clientSocket))
             {
-                Socket = clientSocket.EndAccept(ar),
-                Buffer = new byte[BufferSize]
-            };
+                return;
+            }
 
             try
             {
+                var state = new StateObject
+                {
+                    Socket = clientSocket.EndAccept(ar),
+                    Buffer = new byte[BufferSize]
+                };
+
                 state.ReadFromSocket(ServerReadCallback);
                 connectedClients.TryAdd(state.Socket, state.Socket.RemoteEndPoint.ToString());
             }
@@ -83,7 +87,7 @@ namespace Mtf.Network
             }
             catch (ObjectDisposedException)
             {
-                Console.WriteLine($"AcceptCallback - Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
+                Console.WriteLine($"AcceptCallback - Client socket was already disposed.");
             }
             catch (Exception ex)
             {
@@ -157,9 +161,21 @@ namespace Mtf.Network
         {
             while (!(CancellationTokenSource?.Token.IsCancellationRequested ?? true))
             {
-                if (Socket.Poll(10, SelectMode.SelectRead))
+                try
                 {
-                    _ = Socket.BeginAccept(new AsyncCallback(AcceptCallback), Socket);
+                    if (Socket != null && Socket.Connected && Socket.Poll(10, SelectMode.SelectRead))
+                    {
+                        _ = Socket.BeginAccept(new AsyncCallback(AcceptCallback), Socket);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    Console.WriteLine("ListenerEngine - Socket was disposed.");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ListenerEngine - Unexpected error: {ex.Message}");
                 }
             }
         }
