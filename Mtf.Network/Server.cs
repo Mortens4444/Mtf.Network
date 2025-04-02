@@ -82,7 +82,7 @@ namespace Mtf.Network
                     ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
                     ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
             {
-                Console.WriteLine($"AcceptCallback - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
+                Console.WriteLine($"AcceptCallback - Client {clientSocket.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
                 NetUtils.CloseSocket(clientSocket);
             }
             catch (ObjectDisposedException)
@@ -91,7 +91,7 @@ namespace Mtf.Network
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"AcceptCallback - Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
+                Console.WriteLine($"AcceptCallback - Error reading from client {clientSocket.RemoteEndPoint}: {ex.Message}");
                 NetUtils.CloseSocket(clientSocket);
             }
         }
@@ -123,14 +123,14 @@ namespace Mtf.Network
                     }
                     else
                     {
-                        Console.WriteLine($"Client {clientSocket.RemoteEndPoint} disconnected gracefully.");
+                        Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected gracefully.");
                         connectedClients.TryRemove(clientSocket, out _);
                         NetUtils.CloseSocket(clientSocket);
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Client {clientSocket.RemoteEndPoint} detected as disconnected before EndReceive.");
+                    Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} detected as disconnected before EndReceive.");
                     connectedClients.TryRemove(clientSocket, out _);
                     NetUtils.CloseSocket(clientSocket);
                 }
