@@ -164,7 +164,7 @@ namespace Mtf.Network
             {
                 try
                 {
-                    if (Socket != null && Socket.Connected && Socket.Poll(10, SelectMode.SelectRead))
+                    if (Socket != null && Socket.Poll(10, SelectMode.SelectRead))
                     {
                         _ = Socket.BeginAccept(new AsyncCallback(AcceptCallback), Socket);
                     }
