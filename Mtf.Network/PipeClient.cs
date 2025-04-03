@@ -38,10 +38,10 @@ namespace Mtf.Network
 
             try
             {
-#if NET462_OR_GREATER
-                await namedPipeClientStream.ConnectAsync(CancellationTokenSource.Token).ConfigureAwait(false);
-#else
+#if NET452
                 namedPipeClientStream.Connect();
+#else
+                await namedPipeClientStream.ConnectAsync(CancellationTokenSource.Token).ConfigureAwait(false);
 #endif
             }
             catch (Exception ex)

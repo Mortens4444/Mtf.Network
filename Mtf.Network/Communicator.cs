@@ -59,11 +59,10 @@ namespace Mtf.Network
 
         public bool Send(string message, bool appendNewLine = false)
         {
-            var messageToSend = TransformMessage(message, appendNewLine);
-            var result = Send(Socket, messageToSend);
+            var result = Send(Socket, message, appendNewLine);
             if (result)
             {
-                OnMessageSent(messageToSend);
+                OnMessageSent(message);
             }
             return result;
         }

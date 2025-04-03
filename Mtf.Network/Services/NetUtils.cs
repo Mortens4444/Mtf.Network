@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -21,7 +23,7 @@ namespace Mtf.Network.Services
             catch { }
             finally
             {
-                if (socket != null)
+                if (socket != null && !socket.IsBound)
                 {
                     socket.Close();
                     socket.Dispose();
@@ -110,7 +112,7 @@ namespace Mtf.Network.Services
             {
                 try
                 {
-                    var response = await httpClient.GetStringAsync("http://icanhazip.com").ConfigureAwait(false);
+                    var response = await httpClient.GetStringAsync(new Uri("http://icanhazip.com")).ConfigureAwait(false);
                     if (IPAddress.TryParse(response.Trim(), out var ipAddress))
                     {
                         return ipAddress;
@@ -120,6 +122,30 @@ namespace Mtf.Network.Services
 
                 return null;
             }
+        }
+
+        public static bool AreTheSameIp(string serverIp1, string serverIp2)
+        {
+            if (serverIp1 == serverIp2)
+            {
+                return true;
+            }
+
+            var localIps = GetLocalIPAddresses(AddressFamily.InterNetwork);
+            if ((localIps.Any(ip => ip == serverIp1) || serverIp1 == "0.0.0.0") && (localIps.Any(ip => ip == serverIp2) || serverIp2 == "0.0.0.0"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static IEnumerable<string> GetLocalIPAddresses(AddressFamily addressFamily)
+        {
+            return Dns.GetHostEntry(Dns.GetHostName())
+                      .AddressList
+                      .Where(ip => ip.AddressFamily == addressFamily)
+                      .Select(ip => ip.ToString());
         }
     }
 }

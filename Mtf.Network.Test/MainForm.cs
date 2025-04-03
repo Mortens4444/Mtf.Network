@@ -27,14 +27,21 @@ namespace Mtf.Network.Test
 
         private void BtnStartServer_Click(object sender, EventArgs e)
         {
-            if (server == null)
+            try
             {
-                server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
-                server.DataArrived += DataArrivedEventHandler;
-                server.Start();
-                lblServer.Text = server.ToString();
-                btnStopServer.Enabled = true;
-                btnStartServer.Enabled = false;
+                if (server == null)
+                {
+                    server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
+                    server.DataArrived += DataArrivedEventHandler;
+                    server.Start();
+                    lblServer.Text = server.ToString();
+                    btnStopServer.Enabled = true;
+                    btnStartServer.Enabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
             }
         }
 
@@ -100,7 +107,7 @@ namespace Mtf.Network.Test
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                ErrorBox.Show(ex);
             }
         }
 
@@ -120,7 +127,7 @@ namespace Mtf.Network.Test
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                ErrorBox.Show(ex);
             }
         }
 

@@ -20,20 +20,20 @@ namespace Mtf.Network.Models
             var sb = new StringBuilder();
             _ = sb.AppendLine($"{HttpMethod} {Uri.PathAndQuery} {HttpProtocol}/{(int)HttpProtocolVersion / 10}.{(int)HttpProtocolVersion % 10}");
 
-#if NET462_OR_GREATER
-            foreach (var (Description, Value) in GetPropertiesWithDescriptions())
-            {
-                if (!String.IsNullOrEmpty(Value))
-                {
-                    _ = sb.AppendLine($"{Description}: {Value}");
-                }
-            }
-#else
+#if NET452
             foreach (var tuple in GetPropertiesWithDescriptions())
             {
                 if (!String.IsNullOrEmpty(tuple.Item2))
                 {
                     _ = sb.AppendLine($"{tuple.Item1}: {tuple.Item2}");
+                }
+            }
+#else
+            foreach (var (Description, Value) in GetPropertiesWithDescriptions())
+            {
+                if (!String.IsNullOrEmpty(Value))
+                {
+                    _ = sb.AppendLine($"{Description}: {Value}");
                 }
             }
 #endif
@@ -195,10 +195,10 @@ namespace Mtf.Network.Models
         [Description("WWW-Authenticate")]
         public string WWWAuthenticate { get; set; } = String.Empty;
 
-#if NET462_OR_GREATER
-        private IEnumerable<(string Description, string Value)> GetPropertiesWithDescriptions()
-#else
+#if NET452
         private IEnumerable<Tuple<string, string>> GetPropertiesWithDescriptions()
+#else
+        private IEnumerable<(string Description, string Value)> GetPropertiesWithDescriptions()
 #endif
         {
             var properties = GetType().GetProperties();
@@ -208,10 +208,10 @@ namespace Mtf.Network.Models
                 if (descriptionAttribute != null)
                 {
                     var value = property.GetValue(this)?.ToString();
-#if NET462_OR_GREATER
-                    yield return (descriptionAttribute.Description, value);
-#else
+#if NET452
                     yield return new Tuple<string, string>(descriptionAttribute.Description, value);
+#else
+                    yield return (descriptionAttribute.Description, value);
 #endif
                 }
             }

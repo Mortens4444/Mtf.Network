@@ -33,7 +33,12 @@ namespace Mtf.Network
                 var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
                 if (!result.AsyncWaitHandle.WaitOne(Timeout))
                 {
-                    throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer);
+                    var ipAddress = Socket?.LocalEndPoint?.ToString();
+                    if (String.IsNullOrEmpty(ipAddress) || ipAddress.StartsWith("0.0.0.0:"))
+                    {
+                        ipAddress = String.Join(", ", NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork));
+                    }
+                    throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer, ipAddress);
                 }
 
                 receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);

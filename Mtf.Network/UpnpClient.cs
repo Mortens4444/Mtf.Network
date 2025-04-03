@@ -74,7 +74,7 @@ namespace Mtf.Network
             var messageBytes = Encoding.GetBytes(message);
             var endPoint = new IPEndPoint(IPAddress.Parse(ServerHostnameOrIPAddress), ListenerPortOfServer);
 
-#if NET462_OR_GREATER
+#if NETSTANDARD2_0_OR_GREATER
             _ = await Socket.SendToAsync(new ArraySegment<byte>(messageBytes), SocketFlags.None, endPoint).ConfigureAwait(false);
 #else
             _ = Socket.SendTo(messageBytes, SocketFlags.None, endPoint);

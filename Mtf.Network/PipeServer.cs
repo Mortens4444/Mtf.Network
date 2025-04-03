@@ -74,10 +74,10 @@ namespace Mtf.Network
                 {
                     try
                     {
-#if NET462_OR_GREATER
-                        await server.WaitForConnectionAsync(token).ConfigureAwait(false);
-#else
+#if NET452
                         server.WaitForConnection();
+#else
+                        await server.WaitForConnectionAsync(token).ConfigureAwait(false);
 #endif
 
                         using (var reader = new StreamReader(server, Encoding))
