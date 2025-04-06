@@ -20,7 +20,7 @@ namespace Mtf.Network.Models
             var sb = new StringBuilder();
             _ = sb.AppendLine($"{HttpMethod} {Uri.PathAndQuery} {HttpProtocol}/{(int)HttpProtocolVersion / 10}.{(int)HttpProtocolVersion % 10}");
 
-#if NET452
+#if NET452 || NET462
             foreach (var tuple in GetPropertiesWithDescriptions())
             {
                 if (!String.IsNullOrEmpty(tuple.Item2))
@@ -195,7 +195,7 @@ namespace Mtf.Network.Models
         [Description("WWW-Authenticate")]
         public string WWWAuthenticate { get; set; } = String.Empty;
 
-#if NET452
+#if NET452 || NET462
         private IEnumerable<Tuple<string, string>> GetPropertiesWithDescriptions()
 #else
         private IEnumerable<(string Description, string Value)> GetPropertiesWithDescriptions()
@@ -208,7 +208,7 @@ namespace Mtf.Network.Models
                 if (descriptionAttribute != null)
                 {
                     var value = property.GetValue(this)?.ToString();
-#if NET452
+#if NET452 || NET462
                     yield return new Tuple<string, string>(descriptionAttribute.Description, value);
 #else
                     yield return (descriptionAttribute.Description, value);

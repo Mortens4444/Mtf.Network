@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace Mtf.Network.Services
@@ -108,7 +111,21 @@ namespace Mtf.Network.Services
 
         public static async Task<IPAddress> GetExternalIpAddressAsync()
         {
+#if NET452 || NET462 || NETSTANDARD2_0
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
             using (var httpClient = new System.Net.Http.HttpClient())
+#else
+            var handler = new SocketsHttpHandler
+            {
+                SslOptions = new()
+                {
+                    EnabledSslProtocols = SslProtocols.Tls12
+                }
+            };
+
+            using (var httpClient = new System.Net.Http.HttpClient(handler))
+#endif
             {
                 try
                 {
