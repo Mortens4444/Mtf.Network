@@ -221,6 +221,12 @@ namespace Mtf.Network
             Send(clientSocket, data, appendNewLine);
         }
 
+        public void SendBytesInChunksToAllClients(byte[] header, byte[] data)
+        {
+            SendBytesInChunksToAllClients(header);
+            SendBytesInChunksToAllClients(data);
+        }
+
         public void SendBytesInChunksToAllClients(byte[] data, int headerSize = 0)
         {
             var chunkSize = Socket.SendBufferSize - headerSize;

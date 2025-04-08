@@ -8,16 +8,19 @@ using System.Threading;
 
 namespace Mtf.Network
 {
-    public class VideoCaptureClient
+    public class VideoCaptureClient : IDisposable
     {
+        public int BufferSize { get; set; } = 409600;
         private readonly string serverIp;
         private readonly ushort serverPort;
         private readonly List<byte> imageDataChunks = new List<byte>();
 
         private Client client;
         private int started;
+        private bool disposed;
 
         public event EventHandler<FrameArrivedEventArgs> FrameArrived;
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
 
         public VideoCaptureClient(string serverIp, int serverPort)
         {
@@ -44,7 +47,7 @@ namespace Mtf.Network
                     Timeout = timeout
                 };
                 client.DataArrived += ClientDataArrivedEventHandler;
-                client.SetBufferSize(409600);
+                client.SetBufferSize(BufferSize);
                 client.Connect();
             }
         }
@@ -109,13 +112,48 @@ namespace Mtf.Network
                 imageData.Skip(imageData.Count - pngEndMarker.Length).SequenceEqual(pngEndMarker);
         }
 
+        protected void OnErrorOccurred(Exception exception)
+        {
+            ErrorOccurred?.Invoke(this, new ExceptionEventArgs(exception));
+        }
+
         protected virtual void OnFrameArrived(byte[] fullImageData)
         {
-            using (var stream = new MemoryStream(fullImageData))
+            try
             {
-                var image = Image.FromStream(stream);
-                FrameArrived?.Invoke(this, new FrameArrivedEventArgs(image));
+                using (var stream = new MemoryStream(fullImageData))
+                {
+                    var image = Image.FromStream(stream);
+                    FrameArrived?.Invoke(this, new FrameArrivedEventArgs(image));
+                }
             }
+            catch (ArgumentException ex)
+            {
+                OnErrorOccurred(ex);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    Stop();
+                }
+                disposed = true;
+            }
+        }
+
+        ~VideoCaptureClient()
+        {
+            Dispose(false);
         }
     }
 }

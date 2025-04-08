@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class ImageCaptureServer
+    public class ImageCaptureServer : IDisposable
     {
         private readonly IImageSource imageSource;
         private readonly string identifier;
         private bool disposed;
+
+        public int BufferSize { get; set; } = 409600;
 
         public Server Server { get; set; }
 
@@ -29,7 +31,7 @@ namespace Mtf.Network
 
             Server = new Server();
             Server.Start();
-            Server.SetBufferSize(409600);
+            Server.SetBufferSize(BufferSize);
 
             _ = Task.Run(async () =>
             {
