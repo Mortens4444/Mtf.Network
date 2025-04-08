@@ -104,7 +104,7 @@ namespace Mtf.Network
 
         private static bool IsCompleteImage(List<byte> imageData)
         {
-            var pngEndMarker = new byte[] { 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }; // IEND marker
+            var pngEndMarker = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }; // IEND marker
             return imageData.Count >= pngEndMarker.Length &&
                 imageData.Skip(imageData.Count - pngEndMarker.Length).SequenceEqual(pngEndMarker);
         }
