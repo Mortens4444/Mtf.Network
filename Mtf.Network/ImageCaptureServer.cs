@@ -11,7 +11,7 @@ namespace Mtf.Network
         private readonly string identifier;
         private bool disposed;
 
-        public int BufferSize { get; set; } = 409600;
+        public int BufferSize { get; set; } = Constants.ImageBufferSize;
 
         public Server Server { get; set; }
 

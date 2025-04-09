@@ -11,5 +11,7 @@
         public const int NotFound = -1;
 
         public const int DisposeTimeout = 3000;
+
+        public const int ImageBufferSize = 409600;
     }
 }

@@ -10,10 +10,11 @@ namespace Mtf.Network
 {
     public class VideoCaptureClient : IDisposable
     {
-        public int BufferSize { get; set; } = 409600;
+        public int BufferSize { get; set; } = Constants.ImageBufferSize;
         private readonly string serverIp;
         private readonly ushort serverPort;
-        private readonly List<byte> imageDataChunks = new List<byte>();
+        private MemoryStream receiveBuffer;
+        private long processedPosition = 0;
 
         private Client client;
         private int started;
@@ -21,6 +22,9 @@ namespace Mtf.Network
 
         public event EventHandler<FrameArrivedEventArgs> FrameArrived;
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
+
+        private static readonly byte[] PngSignature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        private static readonly byte[] PngEndMarker = { 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }; // IEND chunk type + CRC
 
         public VideoCaptureClient(string serverIp, int serverPort)
         {
@@ -36,6 +40,8 @@ namespace Mtf.Network
 
             this.serverIp = serverIp == "0.0.0.0" ? "localhost" : serverIp;
             this.serverPort = (ushort)serverPort;
+
+            receiveBuffer = new MemoryStream(BufferSize);
         }
 
         public void Start(int timeout = Constants.SocketConnectionTimeout)
@@ -61,26 +67,10 @@ namespace Mtf.Network
                 client.Dispose();
                 client = null;
             }
-        }
 
-        public static bool IsPngStart(byte[] bytes)
-        {
-            byte[] pngSignature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-
-            if (bytes == null || bytes.Length < pngSignature.Length)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < pngSignature.Length; i++)
-            {
-                if (bytes[i] != pngSignature[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            receiveBuffer?.Dispose();
+            receiveBuffer = new MemoryStream(BufferSize);
+            processedPosition = 0;
         }
 
         private void ClientDataArrivedEventHandler(object sender, DataArrivedEventArgs e)
@@ -90,26 +80,121 @@ namespace Mtf.Network
                 return;
             }
 
-            if (IsPngStart(e.Data))
+            try
             {
-                imageDataChunks.Clear();
+                var originalPosition = receiveBuffer.Position;
+                receiveBuffer.Seek(0, SeekOrigin.End);
+                receiveBuffer.Write(e.Data, 0, e.Data.Length);
+                receiveBuffer.Position = originalPosition;
+
+                ProcessBuffer();
             }
-
-            imageDataChunks.AddRange(e.Data);
-
-            if (imageDataChunks.Count > 0 && IsCompleteImage(imageDataChunks))
+            catch (Exception ex)
             {
-                var fullImageData = imageDataChunks.ToArray();
-                OnFrameArrived(fullImageData);
-                imageDataChunks.Clear();
+                OnErrorOccurred(ex);
+                CompactBuffer(receiveBuffer.Length);
             }
         }
 
-        private static bool IsCompleteImage(List<byte> imageData)
+        private void ProcessBuffer()
         {
-            var pngEndMarker = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }; // IEND marker
-            return imageData.Count >= pngEndMarker.Length &&
-                imageData.Skip(imageData.Count - pngEndMarker.Length).SequenceEqual(pngEndMarker);
+            var buffer = receiveBuffer.GetBuffer();
+            var bufferLength = receiveBuffer.Length;
+
+            while (true)
+            {
+                var startIndex = FindSequence(buffer, bufferLength, processedPosition, PngSignature);
+                if (startIndex == -1)
+                {
+                    break;
+                }
+
+                processedPosition = startIndex;
+
+                var searchEndFrom = processedPosition + PngSignature.Length;
+                var endIndexMarkerStart = FindSequence(buffer, bufferLength, searchEndFrom, PngEndMarker);
+
+                if (endIndexMarkerStart == -1)
+                {
+                    break;
+                }
+
+                var frameEndPosition = endIndexMarkerStart + PngEndMarker.Length - 1;
+                var frameLength = (int)(frameEndPosition - processedPosition + 1);
+
+                if (frameLength <= 0 || processedPosition + frameLength > bufferLength)
+                {
+                    OnErrorOccurred(new InvalidDataException($"Invalid frame length calculated: {frameLength} at position {processedPosition}"));
+                    processedPosition = frameEndPosition + 1;
+                    continue;
+                }
+
+                var fullImageData = new byte[frameLength];
+                Buffer.BlockCopy(buffer, (int)processedPosition, fullImageData, 0, frameLength);
+                OnFrameArrived(fullImageData);
+
+                processedPosition = frameEndPosition + 1;
+            }
+
+            CompactBuffer(processedPosition);
+        }
+
+        private void CompactBuffer(long bytesToRemove)
+        {
+            if (bytesToRemove <= 0)
+            {
+                return;
+            }
+
+            var buffer = receiveBuffer.GetBuffer();
+            var bufferLength = receiveBuffer.Length;
+            var remainingLength = bufferLength - bytesToRemove;
+
+            if (remainingLength > 0)
+            {
+                Buffer.BlockCopy(buffer, (int)bytesToRemove, buffer, 0, (int)remainingLength);
+            }
+
+            receiveBuffer.SetLength(remainingLength);
+            receiveBuffer.Position = remainingLength;
+            processedPosition = 0;
+        }
+
+        private static int FindSequence(byte[] bufferToSearch, long bufferLength, long startOffset, byte[] sequenceToFind)
+        {
+            if (sequenceToFind == null || sequenceToFind.Length == 0 || bufferToSearch == null || bufferLength == 0)
+            {
+                return -1;
+            }
+
+            if (startOffset < 0)
+            {
+                startOffset = 0;
+            }
+
+            var maxSearchIndex = bufferLength - sequenceToFind.Length;
+            if (startOffset > maxSearchIndex)
+            {
+                return -1;
+            }
+
+            for (long i = startOffset; i <= maxSearchIndex; i++)
+            {
+                var match = true;
+                for (int j = 0; j < sequenceToFind.Length; j++)
+                {
+                    if (bufferToSearch[i + j] != sequenceToFind[j])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match)
+                {
+                    return (int)i;
+                }
+            }
+            return -1;
         }
 
         protected void OnErrorOccurred(Exception exception)
@@ -123,11 +208,15 @@ namespace Mtf.Network
             {
                 using (var stream = new MemoryStream(fullImageData))
                 {
-                    var image = Image.FromStream(stream);
+                    var image = Image.FromStream(stream, false, false);
                     FrameArrived?.Invoke(this, new FrameArrivedEventArgs(image));
                 }
             }
             catch (ArgumentException ex)
+            {
+                OnErrorOccurred(new InvalidDataException("Failed to load image from received data.", ex));
+            }
+            catch (Exception ex)
             {
                 OnErrorOccurred(ex);
             }
@@ -146,6 +235,7 @@ namespace Mtf.Network
                 if (disposing)
                 {
                     Stop();
+                    receiveBuffer?.Dispose();
                 }
                 disposed = true;
             }
