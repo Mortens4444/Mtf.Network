@@ -13,5 +13,7 @@
         public const int DisposeTimeout = 3000;
 
         public const int ImageBufferSize = 409600;
+
+        public const int ScreenSendDelayMs = 200;
     }
 }
