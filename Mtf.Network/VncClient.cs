@@ -1,68 +1,79 @@
 ﻿using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using Mtf.Network.Services;
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using static Mtf.Network.VncServer;
+using System.Threading;
 
 namespace Mtf.Network
 {
-    public class VncClient : Socket
+    public class VncClient : IDisposable
     {
-        public ushort ListenerPortOfServer { get; set; }
-        public Encoding Encoding = Encoding.UTF8;
+        private readonly Client client;
         private readonly string serverHost;
+        
+        private VideoCaptureClient videoCaptureClient;
+        private int disposed;
 
-        public event DataArrivedEventHandler DataArrived;
-        public event ErrorOccurredEventHandler ErrorOccurred;
+        public event EventHandler<FrameArrivedEventArgs> FrameArrived;
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
 
         public VncClient(string serverHost, ushort listenerPort)
-            : base(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
         {
-            ListenerPortOfServer = listenerPort;
             this.serverHost = serverHost;
 
-            ReceiveTimeout = Constants.SocketConnectionTimeout;
-            SendTimeout = Constants.SocketConnectionTimeout;
-            SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, Constants.MaxBufferSize);
-            SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, Constants.MaxBufferSize);
+            client = new Client(serverHost, listenerPort);
+            client.DataArrived += Client_DataArrived;
+            client.ErrorOccurred += Client_ErrorOccurred;
+        }
 
-            LingerState = new LingerOption(true, 1);
-            NoDelay = true;
-            DontFragment = true;
+        private void VideoCaptureClient_FrameArrived(object sender, FrameArrivedEventArgs e)
+        {
+            FrameArrived?.Invoke(this, e);
+        }
 
-            var result = BeginConnect(this.serverHost, ListenerPortOfServer, null, null);
-            var success = result.AsyncWaitHandle.WaitOne(Constants.SocketConnectionTimeout, true);
-            if (!success)
+        private void Client_DataArrived(object sender, DataArrivedEventArgs e)
+        {
+            var message = client.Encoding.GetString(e.Data);
+            if (message == VncCommand.ScreenSize)
             {
-                throw new InvalidDataException("Check if VNC server is running, check the service port and the firewall settings");
+
             }
-
-            DataArrived += DataArrivedHandlerAsync;
-            Task.Run(Receiver);
+            if (message == "Unknown command")
+            {
+                OnErrorOccurred(new InvalidDataException("Server could not recognize the sent command."));
+            }
+            else if (message.StartsWith(VncCommand.ScreenRecorderPortResponse))
+            {
+                var messageParts = message.Split(VncCommand.Separator);
+                if (UInt16.TryParse(messageParts[1], out var port))
+                {
+                    videoCaptureClient = new VideoCaptureClient(serverHost, port);
+                    videoCaptureClient.FrameArrived += VideoCaptureClient_FrameArrived;
+                }
+            }
+            else
+            {
+                OnErrorOccurred(new InvalidDataException($"Server sent an unexpected message: {message}"));
+            }
         }
 
-        public bool Send(string message)
+        private void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
         {
-            return SendBytes(Encoding.GetBytes(message));
+            ErrorOccurred?.Invoke(this, new ExceptionEventArgs(e.Exception));
         }
 
-        public Task<bool> SendAsync(string message)
+        public void Start()
         {
-            return SendBytesAsync(Encoding.GetBytes(message));
+            client.Connect();
+            client.Send(VncCommand.GetScreenRecorderPort);
+
         }
 
-        public bool SendBytes(byte[] bytes)
+        public void Stop()
         {
-            return MessageSender.Send(this, bytes);
-        }
-
-        public Task<bool> SendBytesAsync(byte[] bytes)
-        {
-            return MessageSender.SendAsync(this, bytes);
+            videoCaptureClient.Stop();
+            client.Disconnect();
         }
 
         protected virtual void OnErrorOccurred(Exception exception)
@@ -70,68 +81,30 @@ namespace Mtf.Network
             ErrorOccurred?.Invoke(this, new ExceptionEventArgs(exception));
         }
 
-        protected virtual void OnDataArrived(DataArrivedEventArgs e)
+        ~VncClient()
         {
-            DataArrived?.Invoke(this, e);
+            Dispose(false);
         }
 
-        public void SetNewDataArriveEventHandler(DataArrivedEventHandler dataArrivedEventHandler)
+        public void Dispose()
         {
-            if (dataArrivedEventHandler != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
             {
-                DataArrived -= DataArrivedHandlerAsync;
-                DataArrived += dataArrivedEventHandler;
+                return;
             }
-        }
 
-        public async Task DataArrivedHandlerAsync(object sender, DataArrivedEventArgs e)
-        {
-            var message = await GetMessageAsync(sender, e).ConfigureAwait(false);
-            switch (message)
+            if (disposing)
             {
-                case VncCommand.ScreenSize:
-                    break;
-                case "Unknown command":
-                    OnErrorOccurred(new InvalidDataException("Server could not recognize the sent command"));
-                    break;
-                default:
-                    OnErrorOccurred(new InvalidDataException("Server sent an unexpected message"));
-                    break;
+                Stop();
+                videoCaptureClient.Dispose();
+                client.Dispose();
             }
-        }
-
-        public static Task<string> GetMessageAsync(object sender, DataArrivedEventArgs e)
-        {
-            return Task.Run(() =>
-            {
-                var vncClient = (VncClient)sender;
-                return vncClient.Encoding.GetString(e.Data);
-            });
-        }
-
-        private async Task Receiver()
-        {
-            try
-            {
-                while (Connected)
-                {
-                    if (Available > 0)
-                    {
-                        await Task.Delay(100).ConfigureAwait(false);
-                        var readable = Available;
-
-                        var receiveBuffer = new byte[readable];
-                        var readBytes = Receive(receiveBuffer, receiveBuffer.Length, SocketFlags.None);
-                        if (readBytes > 0)
-                        {
-                            var s = new string(Encoding.GetChars(receiveBuffer, 0, readBytes));
-                            OnDataArrived(new DataArrivedEventArgs(this, receiveBuffer));
-                        }
-                    }
-                    await Task.Delay(1).ConfigureAwait(false);
-                }
-            }
-            catch (SocketException) { }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Mtf.Network.Exceptions;
+using Mtf.Network.Extensions;
 using Mtf.Network.Services;
 using System;
 using System.Net;
@@ -10,6 +11,8 @@ namespace Mtf.Network
 {
     public class Client : Communicator
     {
+        private Task receiverTask;
+
         public Client(string serverHost, ushort listenerPort, AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp)
             : base(addressFamily, socketType, protocolType, listenerPort)
@@ -23,7 +26,6 @@ namespace Mtf.Network
         public string ServerHostnameOrIPAddress { get; set; }
 
         public int ListenerPortOfClient => ((IPEndPoint)Socket.LocalEndPoint)?.Port ?? Constants.NotFound;
-        private Task receiverTask;
 
         public void Connect()
         {
@@ -33,11 +35,7 @@ namespace Mtf.Network
                 var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
                 if (!result.AsyncWaitHandle.WaitOne(Timeout))
                 {
-                    var ipAddress = Socket?.LocalEndPoint?.ToString();
-                    if (String.IsNullOrEmpty(ipAddress) || ipAddress.StartsWith("0.0.0.0:"))
-                    {
-                        ipAddress = String.Join(", ", NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork));
-                    }
+                    var ipAddress = Socket?.GetLocalIPAddresses();
                     throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer, ipAddress);
                 }
 

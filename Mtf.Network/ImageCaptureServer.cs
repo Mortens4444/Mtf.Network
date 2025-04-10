@@ -1,4 +1,5 @@
-﻿using Mtf.Network.Interfaces;
+﻿using Mtf.Network.EventArg;
+using Mtf.Network.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,9 +8,12 @@ namespace Mtf.Network
 {
     public class ImageCaptureServer : IDisposable
     {
+        private CancellationTokenSource cancellationTokenSource;
         private readonly IImageSource imageSource;
         private readonly string identifier;
         private bool disposed;
+
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
 
         public int BufferSize { get; set; } = Constants.ImageBufferSize;
 
@@ -27,6 +31,7 @@ namespace Mtf.Network
 
         public Server StartVideoCaptureServer(CancellationTokenSource cancellationTokenSource)
         {
+            this.cancellationTokenSource = cancellationTokenSource;
             int retryCount = 0;
 
             Server = new Server();
@@ -63,6 +68,13 @@ namespace Mtf.Network
             return Server;
         }
 
+        public void Stop()
+        {
+            cancellationTokenSource.Cancel();
+            Server?.Stop();
+            Server?.Dispose();
+        }
+
         private async Task CaptureAndSendLoop(int delay, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -93,6 +105,8 @@ namespace Mtf.Network
             {
                 if (disposing)
                 {
+                    cancellationTokenSource?.Cancel();
+                    cancellationTokenSource?.Dispose();
                     Server?.Dispose();
                 }
                 disposed = true;

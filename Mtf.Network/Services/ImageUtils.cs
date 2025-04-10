@@ -1,6 +1,4 @@
-﻿using Mtf.Network.Enums;
-using Mtf.Network.Extensions;
-using Mtf.Network.Models;
+﻿using Mtf.Network.Models;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -16,10 +14,10 @@ namespace Mtf.Network.Services
             return imageArray == null ? null : Image.FromStream(new MemoryStream(imageArray));
         }
 
-        public static byte[] GetScreenAreaInByteArray(Rectangle rectangle, Encoding encoding)
+        public static byte[] GetScreenAreaInByteArray(Rectangle rectangle)
         {
             var bitmap = GetScreenAreaBitmap(rectangle, PixelFormat.Format16bppRgb565);
-            return ImageToByteArrayWithSizeInfo(bitmap, ImageFormat.Jpeg, encoding);
+            return ImageToByteArray(bitmap);
         }
 
         public static Bitmap GetScreenAreaBitmap(Rectangle rectangle, PixelFormat pixelFormat)
@@ -46,7 +44,7 @@ namespace Mtf.Network.Services
 
         public static byte[] ImageToByteArray(Image image)
         {
-            return ImageToByteArray(image, ImageFormat.Jpeg);
+            return ImageToByteArray(image, ImageFormat.Png);
         }
 
         public static byte[] ImageToByteArray(Image image, ImageFormat format)
@@ -59,13 +57,6 @@ namespace Mtf.Network.Services
             var memoryStream = new MemoryStream();
             image.Save(memoryStream, format);
             return memoryStream.ToArray();
-        }
-
-        public static byte[] ImageToByteArrayWithSizeInfo(Image image, ImageFormat format, Encoding encoding)
-        {
-            var imageArray = ImageToByteArray(image, format);
-            var imageSizeInfo = encoding.GetBytes($"{VncCommand.ImageSize}{VncCommand.Separator}{imageArray.Length}{VncCommand.Separator}");
-            return imageSizeInfo.AppendArrays(imageArray);
         }
     }
 }

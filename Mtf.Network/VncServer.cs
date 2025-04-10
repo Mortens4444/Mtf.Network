@@ -2,165 +2,64 @@
 using Mtf.Network.EventArg;
 using Mtf.Network.Extensions;
 using Mtf.Network.Interfaces;
-using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class VncServer : Socket
+    public class VncServer : IDisposable
     {
-        public delegate Task DataArrivedEventHandler(object sender, DataArrivedEventArgs e);
-        public delegate Task ErrorOccurredEventHandler(object sender, ExceptionEventArgs e);
+        public event EventHandler<ExceptionEventArgs> ErrorOccurred;
 
-        public int ListenerPortOfServer { get; set; }
-        public Encoding Encoding = Encoding.UTF8;
+        private readonly IScreenInfoProvider screenInfoProvider;
+        private readonly ImageCaptureServer imageCaptureServer;
+        private readonly Server commandServer;
 
-        public event DataArrivedEventHandler DataArrived;
-        public event ErrorOccurredEventHandler ErrorOccurred;
-
-        private Socket clientSocket;
         private CancellationTokenSource cancellationTokenSource;
-        private IScreenInfoProvider screenInfoProvider;
+        private int disposed;
 
-        public VncServer(IScreenInfoProvider screenInfoProvider, int listenerPort = 0)
-            : base(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+        public VncServer(IScreenInfoProvider screenInfoProvider, ushort listenerPort = 0)
+        {
+            if (screenInfoProvider == null)
+            {
+                throw new ArgumentNullException(nameof(screenInfoProvider));
+            }
+
+            this.screenInfoProvider = screenInfoProvider;
+
+            imageCaptureServer = new ImageCaptureServer(new ScreenRecorderImageSource(screenInfoProvider.GetBounds()), screenInfoProvider.Id);
+            imageCaptureServer.ErrorOccurred += ImageCaptureServer_ErrorOccurred;
+
+            commandServer = new Server(listenerPort: listenerPort);
+            commandServer.DataArrived += CommandServer_DataArrived;
+            commandServer.ErrorOccurred += CommandServer_ErrorOccurred;
+        }
+
+        public string ImageCaptureServer => imageCaptureServer.Server.Socket.GetLocalIPAddresses();
+
+        public string CommandServer => imageCaptureServer.Server.Socket.GetLocalIPAddresses();
+
+        public void Start()
         {
             cancellationTokenSource = new CancellationTokenSource();
-            if (listenerPort == 0)
-            {
-                listenerPort = NetUtils.GetFreePort();
-            }
-            this.screenInfoProvider = screenInfoProvider;
-            ListenerPortOfServer = listenerPort;
-
-            Bind(new IPEndPoint(IPAddress.Any, listenerPort));
-            Listen(Constants.MaxPendingConnections);
-            DataArrived += DataArrivedHandlerAsync;
-            _ = Task.Run(ListenerEngine);
-            _ = Task.Run(() => StartScreenSender(screenInfoProvider.GetBounds()));
+            imageCaptureServer.StartVideoCaptureServer(cancellationTokenSource);
+            commandServer.Start();
         }
 
         public void Stop()
         {
             cancellationTokenSource.Cancel();
+            imageCaptureServer.Stop();
+            commandServer.Stop();
         }
 
-        public void StartScreenSender(Rectangle rectangle)
+        public override string ToString()
         {
-            _ = Task.Run(() => ScreenSenderAsync(rectangle));
-
-        }
-        private async Task ScreenSenderAsync(Rectangle rectangle)
-        {
-            while (!cancellationTokenSource.IsCancellationRequested)
-            {
-                await Task.Delay(Constants.ScreenSendDelayMs).ConfigureAwait(false);
-                
-                if (cancellationTokenSource.IsCancellationRequested)
-                {
-                    break;
-                }
-                
-                var socket = Interlocked.Exchange(ref clientSocket, null);
-                if (socket == null)
-                {
-                    continue;
-                }
-
-                var image = ImageUtils.GetScreenAreaInByteArray(rectangle, Encoding);
-                await SendAsync(socket, image).ConfigureAwait(false);
-            }
-        }
-
-        public bool Send(Socket socket, string message)
-        {
-            return MessageSender.Send(socket, Encoding.GetBytes(message));
-        }
-
-        public bool Send(Socket socket, byte[] bytes)
-        {
-            return MessageSender.Send(socket, bytes);
-        }
-
-        public Task<bool> SendAsync(Socket socket, string message)
-        {
-            return MessageSender.SendAsync(socket, Encoding.GetBytes(message));
-        }
-
-        public Task<bool> SendAsync(Socket socket, byte[] bytes)
-        {
-            return MessageSender.SendAsync(socket, bytes);
-        }
-
-        private void ListenerEngine()
-        {
-            try
-            {
-                while (!cancellationTokenSource.IsCancellationRequested)
-                {
-                    if (Poll(10, SelectMode.SelectRead))
-                    {
-                        BeginAccept(new AsyncCallback(AcceptCallback), this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred(ex);
-            }
-        }
-
-        private void AcceptCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var state = new StateObject
-                {
-                    Socket = ((Socket)ar.AsyncState).EndAccept(ar)
-                };
-                state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ServerReadCallback, state);
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred(ex);
-            }
-        }
-
-        private void ServerReadCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var state = (StateObject)ar.AsyncState;
-                var handler = state.Socket;
-                if (handler.Connected)
-                {
-                    int read = handler.EndReceive(ar);
-                    if (read > 0)
-                    {
-                        byte[] data = new byte[read];
-                        Array.Copy(state.Buffer, 0, data, 0, read);
-                        OnDataArrived(new DataArrivedEventArgs(handler, data));
-                        handler.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ServerReadCallback, state);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred(ex);
-            }
-        }
-
-        protected virtual void OnDataArrived(DataArrivedEventArgs e)
-        {
-            DataArrived?.Invoke(this, e);
+            return $"Commands: {commandServer}   -   Images: {imageCaptureServer.Server}";
         }
 
         protected virtual void OnErrorOccurred(Exception exception)
@@ -168,46 +67,70 @@ namespace Mtf.Network
             ErrorOccurred?.Invoke(this, new ExceptionEventArgs(exception));
         }
 
-        private async Task DataArrivedHandlerAsync(object sender, DataArrivedEventArgs e)
+        private void ImageCaptureServer_ErrorOccurred(object sender, ExceptionEventArgs e)
+        {
+            ErrorOccurred?.Invoke(this, new ExceptionEventArgs(e.Exception));
+        }
+
+        private void CommandServer_ErrorOccurred(object sender, ExceptionEventArgs e)
+        {
+            ErrorOccurred?.Invoke(this, new ExceptionEventArgs(e.Exception));
+        }
+
+        private async void CommandServer_DataArrived(object sender, DataArrivedEventArgs e)
         {
             try
             {
-                var vncServer = (VncServer)sender;
-                var message = vncServer.Encoding.GetString(e.Data);
-
-                while (message.Contains(VncCommand.GetScreen))
-                {
-                    clientSocket = e.Socket;
-                    message = message.Remove(VncCommand.GetScreen);
-                }
+                var vncServer = e.Socket;
+                var message = commandServer.Encoding.GetString(e.Data);
 
                 if (message == VncCommand.GetScreenSize)
                 {
                     var size = screenInfoProvider.GetPrimaryScreenSize();
                     var screenSizeMessage = $"{VncCommand.ScreenSize}{VncCommand.Separator}{size.Width}x{size.Height}";
-                    await vncServer.SendAsync(e.Socket, screenSizeMessage);
+                    commandServer.Send(e.Socket, screenSizeMessage);
                 }
-                else if (message.StartsWith($"{VncCommand.KillApp} "))
+                else if (message.StartsWith($"{VncCommand.KillApp} ", StringComparison.Ordinal))
                 {
                     ProcessUtils.KillProcesses(message.Substring(8));
                 }
-                else if (message.IndexOf(VncCommand.Mouse) > Constants.NotFound)
+                else if (message.StartsWith($"{VncCommand.KillApp} ", StringComparison.Ordinal))
                 {
-                    await MouseHandler.ProcessMessageAsync(message);
+                    ProcessUtils.KillProcesses(message.Substring(8));
                 }
-                else if (message.StartsWith(VncCommand.KeyPressed))
+                else if (message == VncCommand.GetScreenRecorderPort)
+                {
+                    Debugger.Break();
+                    var screenSizeMessage = $"{VncCommand.ScreenRecorderPortResponse}{VncCommand.Separator}{imageCaptureServer.Server.ListenerPortOfServer}";
+                    if (commandServer.SendMessageToAllClients(screenSizeMessage))
+                    {
+                        Console.WriteLine("Sent");
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine("Not sent");
+                    }
+                }
+
+                else if (message.IndexOf(VncCommand.Mouse, StringComparison.Ordinal) > Constants.NotFound)
+                {
+                    await MouseHandler.ProcessMessageAsync(message).ConfigureAwait(false);
+                }
+                else if (message.StartsWith(VncCommand.KeyPressed, StringComparison.Ordinal))
                 {
                     var data = message.Split(' ');
                     KeyboardSimulator.SendChar(data[1]);
                 }
-                else if (message.StartsWith(VncCommand.Scrool))
+                else if (message.StartsWith(VncCommand.Scroll, StringComparison.Ordinal))
                 {
-                    var values = message.Split(new string[] { $"{VncCommand.Scrool} " }, StringSplitOptions.RemoveEmptyEntries);
+                    var values = message.Split(new string[] { $"{VncCommand.Scroll} " }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var value in values)
                     {
-                        var scroolValue = Convert.ToInt32(value);
-                        // scroolValue < 0 => scrools down
-                        WinAPI.MouseEvent(WinAPI.MOUSEEVENTF_WHEEL, 0, 0, scroolValue, 0);
+                        if (Int32.TryParse(value, out var scroolValue))
+                        {
+                            // scroolValue < 0 => scrools down
+                            WinAPI.MouseEvent(WinAPI.MOUSEEVENTF_WHEEL, 0, 0, scroolValue, 0);
+                        }
                     }
                 }
                 else
@@ -215,7 +138,7 @@ namespace Mtf.Network
                     if (!String.IsNullOrEmpty(message))
                     {
                         var command = message.GetProgramAndParameters();
-                        var parameters = String.Join(" ", command.Skip(1).Select(param => param.Contains(' ') && !param.StartsWith("\"") ? $"\"{param}\"" : param));
+                        var parameters = String.Join(" ", command.Skip(1).Select(param => param.Contains(' ') && !param.StartsWith("\"", StringComparison.Ordinal) ? $"\"{param}\"" : param));
                         ProcessUtils.RunProgramOrFile(command[0], parameters);
                     }
                 }
@@ -223,6 +146,35 @@ namespace Mtf.Network
             catch (Exception ex)
             {
                 OnErrorOccurred(ex);
+            }
+        }
+
+        ~VncServer()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                imageCaptureServer.Stop();
+                imageCaptureServer.Dispose();
+                commandServer.Stop();
+                commandServer.Dispose();
             }
         }
     }

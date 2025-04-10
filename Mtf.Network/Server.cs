@@ -71,8 +71,7 @@ namespace Mtf.Network
             {
                 var state = new StateObject
                 {
-                    Socket = clientSocket.EndAccept(ar),
-                    Buffer = new byte[BufferSize]
+                    Socket = clientSocket.EndAccept(ar)
                 };
 
                 state.ReadFromSocket(ServerReadCallback);
@@ -191,13 +190,14 @@ namespace Mtf.Network
             connectedClients.Clear();
         }
 
-        public void SendBytesToAllClients(byte[] data, bool appendNewLine = false)
+        public bool SendBytesToAllClients(byte[] data, bool appendNewLine = false)
         {
+            var result = true;
             foreach (var clientSocket in connectedClients.Keys.ToList())
             {
                 try
                 {
-                    Send(clientSocket, data, appendNewLine);
+                    result &= Send(clientSocket, data, appendNewLine);
                 }
                 catch (Exception ex)
                 {
@@ -208,17 +208,18 @@ namespace Mtf.Network
                     }
                 }
             }
+            return result;
         }
 
-        public void SendMessageToAllClients(string message, bool appendNewLine = false)
+        public bool SendMessageToAllClients(string message, bool appendNewLine = false)
         {
-            SendBytesToAllClients(ConvertMessageToData(message, appendNewLine));
+            return SendBytesToAllClients(ConvertMessageToData(message, appendNewLine));
         }
 
-        public void SendMessageToClient(Socket clientSocket, string message, bool appendNewLine = false)
+        public bool SendMessageToClient(Socket clientSocket, string message, bool appendNewLine = false)
         {
             var data = Encoding.GetBytes(message);
-            Send(clientSocket, data, appendNewLine);
+            return Send(clientSocket, data, appendNewLine);
         }
 
         public void SendBytesInChunksToAllClients(byte[] header, byte[] data)
@@ -227,8 +228,9 @@ namespace Mtf.Network
             SendBytesInChunksToAllClients(data);
         }
 
-        public void SendBytesInChunksToAllClients(byte[] data, int headerSize = 0)
+        public bool SendBytesInChunksToAllClients(byte[] data, int headerSize = 0)
         {
+            var result = true;
             var chunkSize = Socket.SendBufferSize - headerSize;
             var totalParts = (int)Math.Ceiling((double)data.Length / chunkSize);
             for (int i = 0; i < totalParts; i++)
@@ -237,8 +239,9 @@ namespace Mtf.Network
                 var partSize = Math.Min(chunkSize, data.Length - offset);
                 var partBytes = new byte[partSize];
                 Buffer.BlockCopy(data, offset, partBytes, 0, partSize);
-                SendBytesToAllClients(partBytes, true);
+                result &= SendBytesToAllClients(partBytes, true);
             }
+            return result;
         }
     }
 }

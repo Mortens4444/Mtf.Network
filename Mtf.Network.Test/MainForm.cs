@@ -16,6 +16,8 @@ namespace Mtf.Network.Test
         private TelnetClient telnetClient;
         private SmtpClient smtpClient;
         private Pop3Client pop3Client;
+        private VncServer vncServer;
+        private VncClient vncClient;
 
         public MainForm()
         {
@@ -637,6 +639,26 @@ namespace Mtf.Network.Test
                 pbVideoCaptureImage.Image = e.Frame;
                 lastImage = e.Frame;
             }));
+        }
+
+        private void BtnStartVncServer_Click(object sender, EventArgs e)
+        {
+            vncServer = new VncServer(new ScreenInfoProvider());
+            vncServer.Start();
+            lblVncServerStatus.Text = vncServer.ToString();
+        }
+
+        private void BtnStartVncClient_Click(object sender, EventArgs e)
+        {
+            vncClient = new VncClient(tbVncClientIpAddress.Text, (ushort)nudVncClientIpAddress.Value);
+            vncClient.FrameArrived += VncClient_FrameArrived;
+            vncClient.Start();
+        }
+
+        private void VncClient_FrameArrived(object? sender, FrameArrivedEventArgs e)
+        {
+            pbVncImages.Image = (Image)e.Frame.Clone();
+            e.Frame.Dispose();
         }
     }
 }

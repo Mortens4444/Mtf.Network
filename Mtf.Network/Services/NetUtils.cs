@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mtf.Network.Services
@@ -41,6 +42,7 @@ namespace Mtf.Network.Services
 
             if (server)
             {
+                Thread.Sleep(10);
                 socket.Bind(new IPEndPoint(ip, port));
                 socket.Listen(Constants.MaxPendingConnections);
             }

@@ -28,6 +28,10 @@
 
         public const string KeyPressed = "keypress";
 
-        public const string Scrool = "scrool";
+        public const string Scroll = "scroll";
+
+        public const string GetScreenRecorderPort = "getscreenrecorderport";
+
+        public const string ScreenRecorderPortResponse = "screenrecorderport";
     }
 }
