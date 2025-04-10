@@ -62,33 +62,26 @@ namespace Mtf.Network
 
         private void AcceptCallback(IAsyncResult ar)
         {
-            var clientSocket = ((Socket)ar.AsyncState).EndAccept(ar);
             try
             {
+                var clientSocket = Socket.EndAccept(ar);
+
                 var state = new StateObject
                 {
-                    Socket = clientSocket,
+                    Socket = clientSocket
                 };
 
+                connectedClients.TryAdd(clientSocket, clientSocket.RemoteEndPoint.ToString());
+
                 state.ReadFromSocket(ServerReadCallback);
-                connectedClients.TryAdd(state.Socket, state.Socket.RemoteEndPoint.ToString());
-            }
-            catch (SocketException ex)
-                when (ex.SocketErrorCode == SocketError.ConnectionReset || // WSAECONNRESET
-                    ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
-                    ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
-            {
-                Console.WriteLine($"AcceptCallback - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
-                NetUtils.CloseSocket(clientSocket);
-            }
-            catch (ObjectDisposedException)
-            {
-                Console.WriteLine($"AcceptCallback - Client socket was already disposed.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"AcceptCallback - Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
-                NetUtils.CloseSocket(clientSocket);
+                OnErrorOccurred(ex);
+            }
+            finally
+            {
+                Socket.BeginAccept(AcceptCallback, null);
             }
         }
 

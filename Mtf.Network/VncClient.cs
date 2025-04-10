@@ -41,6 +41,7 @@ namespace Mtf.Network
                 {
                     videoCaptureClient = new VideoCaptureClient(serverHost, port);
                     videoCaptureClient.FrameArrived += VideoCaptureClient_FrameArrived;
+                    videoCaptureClient.Start();
                 }
             }
             else if (message == VncCommand.ScreenSize)
