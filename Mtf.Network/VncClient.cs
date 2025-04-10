@@ -1,7 +1,6 @@
 ﻿using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -35,15 +34,7 @@ namespace Mtf.Network
         private void Client_DataArrived(object sender, DataArrivedEventArgs e)
         {
             var message = client.Encoding.GetString(e.Data);
-            if (message == VncCommand.ScreenSize)
-            {
-
-            }
-            if (message == "Unknown command")
-            {
-                OnErrorOccurred(new InvalidDataException("Server could not recognize the sent command."));
-            }
-            else if (message.StartsWith(VncCommand.ScreenRecorderPortResponse))
+            if (message.StartsWith(VncCommand.ScreenRecorderPortResponse))
             {
                 var messageParts = message.Split(VncCommand.Separator);
                 if (UInt16.TryParse(messageParts[1], out var port))
@@ -51,6 +42,14 @@ namespace Mtf.Network
                     videoCaptureClient = new VideoCaptureClient(serverHost, port);
                     videoCaptureClient.FrameArrived += VideoCaptureClient_FrameArrived;
                 }
+            }
+            else if (message == VncCommand.ScreenSize)
+            {
+
+            }
+            else if(message == "Unknown command")
+            {
+                OnErrorOccurred(new InvalidDataException("Server could not recognize the sent command."));
             }
             else
             {
@@ -67,12 +66,11 @@ namespace Mtf.Network
         {
             client.Connect();
             client.Send(VncCommand.GetScreenRecorderPort);
-
         }
 
         public void Stop()
         {
-            videoCaptureClient.Stop();
+            videoCaptureClient?.Stop();
             client.Disconnect();
         }
 
@@ -102,7 +100,7 @@ namespace Mtf.Network
             if (disposing)
             {
                 Stop();
-                videoCaptureClient.Dispose();
+                videoCaptureClient?.Dispose();
                 client.Dispose();
             }
         }

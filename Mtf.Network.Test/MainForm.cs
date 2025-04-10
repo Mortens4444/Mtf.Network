@@ -645,20 +645,29 @@ namespace Mtf.Network.Test
         {
             vncServer = new VncServer(new ScreenInfoProvider());
             vncServer.Start();
+            
             lblVncServerStatus.Text = vncServer.ToString();
+            tbVncClientIpAddress.Text = vncServer.CommandServerIpAddress;
+            nudVncClientIpAddress.Value = vncServer.CommandServer.ListenerPortOfServer;
         }
 
         private void BtnStartVncClient_Click(object sender, EventArgs e)
         {
-            vncClient = new VncClient(tbVncClientIpAddress.Text, (ushort)nudVncClientIpAddress.Value);
-            vncClient.FrameArrived += VncClient_FrameArrived;
-            vncClient.Start();
+            if (!String.IsNullOrEmpty(tbVncClientIpAddress.Text))
+            {
+                vncClient = new VncClient(tbVncClientIpAddress.Text, (ushort)nudVncClientIpAddress.Value);
+                vncClient.FrameArrived += VncClient_FrameArrived;
+                vncClient.Start();
+            }
         }
 
         private void VncClient_FrameArrived(object? sender, FrameArrivedEventArgs e)
         {
-            pbVncImages.Image = (Image)e.Frame.Clone();
-            e.Frame.Dispose();
+            Invoke((Action)(() =>
+            {
+                pbVncImages.Image = (Image)e.Frame.Clone();
+                e.Frame.Dispose();
+            }));
         }
     }
 }

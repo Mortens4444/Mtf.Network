@@ -5,8 +5,8 @@ using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace Mtf.Network
@@ -24,12 +24,7 @@ namespace Mtf.Network
 
         public VncServer(IScreenInfoProvider screenInfoProvider, ushort listenerPort = 0)
         {
-            if (screenInfoProvider == null)
-            {
-                throw new ArgumentNullException(nameof(screenInfoProvider));
-            }
-
-            this.screenInfoProvider = screenInfoProvider;
+            this.screenInfoProvider = screenInfoProvider ?? throw new ArgumentNullException(nameof(screenInfoProvider));
 
             imageCaptureServer = new ImageCaptureServer(new ScreenRecorderImageSource(screenInfoProvider.GetBounds()), screenInfoProvider.Id);
             imageCaptureServer.ErrorOccurred += ImageCaptureServer_ErrorOccurred;
@@ -39,9 +34,17 @@ namespace Mtf.Network
             commandServer.ErrorOccurred += CommandServer_ErrorOccurred;
         }
 
-        public string ImageCaptureServer => imageCaptureServer.Server.Socket.GetLocalIPAddresses();
+        public ImageCaptureServer ImageCaptureServer => imageCaptureServer;
 
-        public string CommandServer => imageCaptureServer.Server.Socket.GetLocalIPAddresses();
+        public Server CommandServer => commandServer;
+
+        public string CommandServerIpAddress => commandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault(ip => ip.StartsWith("192.")) ?? commandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault();
+        
+        public string ImageCaptureServerIpAddress => imageCaptureServer?.Server?.Socket?.GetLocalIPAddresses().FirstOrDefault();
+
+        public string ImageCaptureServerInfo => ImageCaptureServer.Server.Socket.GetLocalIPAddressesInfo();
+
+        public string CommandServerInfo => CommandServer.Socket.GetLocalIPAddressesInfo();
 
         public void Start()
         {
@@ -59,7 +62,7 @@ namespace Mtf.Network
 
         public override string ToString()
         {
-            return $"Commands: {commandServer}   -   Images: {imageCaptureServer.Server}";
+            return $"Commands: {CommandServerInfo}   -   Images: {ImageCaptureServerInfo}";
         }
 
         protected virtual void OnErrorOccurred(Exception exception)
@@ -84,7 +87,12 @@ namespace Mtf.Network
                 var vncServer = e.Socket;
                 var message = commandServer.Encoding.GetString(e.Data);
 
-                if (message == VncCommand.GetScreenSize)
+                if (message == VncCommand.GetScreenRecorderPort)
+                {
+                    var screenSizeMessage = $"{VncCommand.ScreenRecorderPortResponse}{VncCommand.Separator}{imageCaptureServer.Server.ListenerPortOfServer}";
+                    commandServer.SendMessageToAllClients(screenSizeMessage);
+                }
+                else if (message == VncCommand.GetScreenSize)
                 {
                     var size = screenInfoProvider.GetPrimaryScreenSize();
                     var screenSizeMessage = $"{VncCommand.ScreenSize}{VncCommand.Separator}{size.Width}x{size.Height}";
@@ -98,20 +106,6 @@ namespace Mtf.Network
                 {
                     ProcessUtils.KillProcesses(message.Substring(8));
                 }
-                else if (message == VncCommand.GetScreenRecorderPort)
-                {
-                    Debugger.Break();
-                    var screenSizeMessage = $"{VncCommand.ScreenRecorderPortResponse}{VncCommand.Separator}{imageCaptureServer.Server.ListenerPortOfServer}";
-                    if (commandServer.SendMessageToAllClients(screenSizeMessage))
-                    {
-                        Console.WriteLine("Sent");
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Not sent");
-                    }
-                }
-
                 else if (message.IndexOf(VncCommand.Mouse, StringComparison.Ordinal) > Constants.NotFound)
                 {
                     await MouseHandler.ProcessMessageAsync(message).ConfigureAwait(false);
@@ -126,10 +120,10 @@ namespace Mtf.Network
                     var values = message.Split(new string[] { $"{VncCommand.Scroll} " }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var value in values)
                     {
-                        if (Int32.TryParse(value, out var scroolValue))
+                        if (Int32.TryParse(value, out var scrollValue))
                         {
-                            // scroolValue < 0 => scrools down
-                            WinAPI.MouseEvent(WinAPI.MOUSEEVENTF_WHEEL, 0, 0, scroolValue, 0);
+                            // scrollValue < 0 => scrolls down
+                            WinAPI.MouseEvent(WinAPI.MOUSEEVENTF_WHEEL, 0, 0, scrollValue, 0);
                         }
                     }
                 }

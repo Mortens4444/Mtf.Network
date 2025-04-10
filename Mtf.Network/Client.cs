@@ -35,7 +35,7 @@ namespace Mtf.Network
                 var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
                 if (!result.AsyncWaitHandle.WaitOne(Timeout))
                 {
-                    var ipAddress = Socket?.GetLocalIPAddresses();
+                    var ipAddress = Socket?.GetLocalIPAddressesInfo();
                     throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer, ipAddress);
                 }
 
