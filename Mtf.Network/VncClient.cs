@@ -28,12 +28,15 @@ namespace Mtf.Network
 
         private void VideoCaptureClient_FrameArrived(object sender, FrameArrivedEventArgs e)
         {
+            Console.WriteLine("Frame arrived to VNC client.");
             FrameArrived?.Invoke(this, e);
         }
 
         private void Client_DataArrived(object sender, DataArrivedEventArgs e)
         {
             var message = client.Encoding.GetString(e.Data);
+            Console.WriteLine($"Message arrived to VNC client: {message}");
+
             if (message.StartsWith(VncCommand.ScreenRecorderPortResponse))
             {
                 var messageParts = message.Split(VncCommand.Separator);

@@ -129,18 +129,18 @@ namespace Mtf.Network
                     ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
                     ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
             {
-                Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
+                Console.Error.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
                 connectedClients.TryRemove(clientSocket, out _);
                 NetUtils.CloseSocket(clientSocket);
             }
             catch (ObjectDisposedException)
             {
-                Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
+                Console.Error.WriteLine($"Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
                 connectedClients.TryRemove(clientSocket, out _);
             }
             catch (Exception ex) 
             {
-                Console.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
+                Console.Error.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
                 connectedClients.TryRemove(clientSocket, out _);
                 NetUtils.CloseSocket(clientSocket);
             }
@@ -159,12 +159,12 @@ namespace Mtf.Network
                 }
                 catch (ObjectDisposedException)
                 {
-                    Console.WriteLine("ListenerEngine - Socket was disposed.");
+                    Console.Error.WriteLine("ListenerEngine - Socket was disposed.");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"ListenerEngine - Unexpected error: {ex.Message}");
+                    Console.Error.WriteLine($"ListenerEngine - Unexpected error: {ex.Message}");
                 }
             }
         }

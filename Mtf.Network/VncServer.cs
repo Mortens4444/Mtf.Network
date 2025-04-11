@@ -4,9 +4,7 @@ using Mtf.Network.Extensions;
 using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading;
 
 namespace Mtf.Network
@@ -86,6 +84,7 @@ namespace Mtf.Network
             {
                 var vncServer = e.Socket;
                 var message = commandServer.Encoding.GetString(e.Data);
+                Console.WriteLine($"Message arrived to VNC server: {message}");
 
                 if (message == VncCommand.GetScreenRecorderPort)
                 {
