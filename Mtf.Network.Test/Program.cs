@@ -1,3 +1,6 @@
+using System;
+using System.Windows.Forms;
+
 namespace Mtf.Network.Test
 {
     internal static class Program
@@ -10,7 +13,9 @@ namespace Mtf.Network.Test
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
+#if NETCOREAPP
             ApplicationConfiguration.Initialize();
+#endif
             Application.Run(new MainForm());
         }
     }

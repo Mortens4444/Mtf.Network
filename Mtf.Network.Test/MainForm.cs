@@ -2,14 +2,19 @@ using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
+using System;
+using System.Drawing;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Mtf.Network.Test
 {
     public partial class MainForm : Form
     {
-        private Server? server;
+        private Server server;
         private Client client;
         private Client client2;
         private FtpClient ftpClient;
@@ -47,14 +52,14 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void DataArrivedEventHandler(object? sender, DataArrivedEventArgs e)
+        private void DataArrivedEventHandler(object sender, DataArrivedEventArgs e)
         {
-            Invoke(async () =>
+            Invoke((Action)(async () =>
             {
                 rtbServerReceivedMessages.AppendText($"{server?.Encoding.GetString(e.Data)}");
                 await SendtoClient(e.Socket);
                 //await SendToAllClient();
-            });
+            }));
         }
 
         private async Task SendtoClient(Socket socket)
@@ -133,20 +138,20 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void ClientDataArrivedEventHandler(object? sender, DataArrivedEventArgs e)
+        private void ClientDataArrivedEventHandler(object sender, DataArrivedEventArgs e)
         {
-            Invoke(() =>
+            Invoke((Action)(() =>
             {
                 rtbClientReceived.AppendText($"{client?.Encoding.GetString(e.Data)}");
-            });
+            }));
         }
 
-        private void ClientDataArrivedEventHandler2(object? sender, DataArrivedEventArgs e)
+        private void ClientDataArrivedEventHandler2(object sender, DataArrivedEventArgs e)
         {
-            Invoke(() =>
+            Invoke((Action)(() =>
             {
                 rtbClientReceived2.AppendText($"{client2?.Encoding.GetString(e.Data)}");
-            });
+            }));
         }
 
         private void BtnFtpAuthenticate_Click(object sender, EventArgs e)
@@ -168,24 +173,24 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void FtpClient_DataArrived(object? sender, DataArrivedEventArgs e)
+        private void FtpClient_DataArrived(object sender, DataArrivedEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Data received: ", ftpClient.Encoding.GetString(e.Data), Environment.NewLine)); });
+            Invoke((Action)(() => { rtbFtpCommunication.AppendText(String.Concat("Data received: ", ftpClient.Encoding.GetString(e.Data), Environment.NewLine)); }));
         }
 
-        private void FtpClient_ErrorOccurred(object? sender, ExceptionEventArgs e)
+        private void FtpClient_ErrorOccurred(object sender, ExceptionEventArgs e)
         {
             ErrorBox.Show(e.Exception);
         }
 
-        private void FtpClient_MessageSent(object? sender, MessageEventArgs e)
+        private void FtpClient_MessageSent(object sender, MessageEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine)); });
+            Invoke((Action)(() => { rtbFtpCommunication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine)); }));
         }
 
-        private void FtpClient_MessageReceived(object? sender, MessageEventArgs e)
+        private void FtpClient_MessageReceived(object sender, MessageEventArgs e)
         {
-            Invoke(() => { rtbFtpCommunication.AppendText(String.Concat("Message received: ", e.Message, Environment.NewLine)); });
+            Invoke((Action)(() => { rtbFtpCommunication.AppendText(String.Concat("Message received: ", e.Message, Environment.NewLine)); }));
         }
 
         private async void BtnSendFtpCommand_Click(object sender, EventArgs e)
@@ -504,21 +509,21 @@ namespace Mtf.Network.Test
         {
             try
             {
-                client.DataArrived += (object? sender, DataArrivedEventArgs e) =>
+                client.DataArrived += (object sender, DataArrivedEventArgs e) =>
                 {
-                    Invoke(() =>
+                    Invoke((Action)(() =>
                     {
                         communication.AppendText(String.Concat("Data received: ", client.Encoding.GetString(e.Data), Environment.NewLine));
-                    });
+                    }));
                 };
-                client.MessageSent += (object? sender, MessageEventArgs e) =>
+                client.MessageSent += (object sender, MessageEventArgs e) =>
                 {
-                    Invoke(() =>
+                    Invoke((Action)(() =>
                     {
                         communication.AppendText(String.Concat("Message sent: ", e.Message, Environment.NewLine));
-                    });
+                    }));
                 };
-                client.ErrorOccurred += (object? sender, ExceptionEventArgs e) => { ErrorBox.Show(e.Exception); };
+                client.ErrorOccurred += (object sender, ExceptionEventArgs e) => { ErrorBox.Show(e.Exception); };
                 client.Connect();
             }
             catch (Exception ex)
@@ -601,15 +606,17 @@ namespace Mtf.Network.Test
 
         public static byte[] AppendByteArrays(params byte[][] arrays)
         {
-            using MemoryStream ms = new();
-            foreach (byte[] array in arrays)
+            using (MemoryStream ms = new MemoryStream())
             {
-                ms.Write(array, 0, array.Length);
+                foreach (byte[] array in arrays)
+                {
+                    ms.Write(array, 0, array.Length);
+                }
+                return ms.ToArray();
             }
-            return ms.ToArray();
         }
 
-        private void DataArrived(object? sender, DataArrivedEventArgs e)
+        private void DataArrived(object sender, DataArrivedEventArgs e)
         {
             var message = Encoding.ASCII.GetString(e.Data);
             InfoBox.Show("Data arrived to client", message);
@@ -631,7 +638,7 @@ namespace Mtf.Network.Test
 
         Image lastImage;
 
-        private void Vcc_FrameArrived(object? sender, FrameArrivedEventArgs e)
+        private void Vcc_FrameArrived(object sender, FrameArrivedEventArgs e)
         {
             Invoke((Action)(() =>
             {
@@ -661,7 +668,7 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void VncClient_FrameArrived(object? sender, FrameArrivedEventArgs e)
+        private void VncClient_FrameArrived(object sender, FrameArrivedEventArgs e)
         {
             Invoke((Action)(() =>
             {

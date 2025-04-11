@@ -1,4 +1,6 @@
 ﻿using Mtf.Network.Interfaces;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Mtf.Network.Test
 {
