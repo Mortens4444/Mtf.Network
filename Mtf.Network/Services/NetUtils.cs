@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Mtf.Network.Exceptions;
+using Mtf.Network.Extensions;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -10,28 +13,6 @@ namespace Mtf.Network.Services
 {
     public static class NetUtils
     {
-        public static bool IsSocketConnected(Socket socket) => socket != null && socket.Connected;
-
-        public static void CloseSocket(Socket socket)
-        {
-            try
-            {
-                if (socket?.Connected ?? false)
-                {
-                    socket.Shutdown(SocketShutdown.Both);
-                }
-            }
-            catch { }
-            finally
-            {
-                if (socket != null && !socket.IsBound)
-                {
-                    socket.Close();
-                    socket.Dispose();
-                }
-            }
-        }
-
         public static Socket CreateSocket(IPAddress ip, int port, AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, bool server)
         {
             var socket = new Socket(addressFamily, socketType, protocolType);

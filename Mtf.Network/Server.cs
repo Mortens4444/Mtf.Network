@@ -1,4 +1,5 @@
-﻿using Mtf.Network.Models;
+﻿using Mtf.Network.Extensions;
+using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
 using System.Collections.Concurrent;
@@ -36,7 +37,7 @@ namespace Mtf.Network
         public void Stop()
         {
             CancellationTokenSource?.Cancel();
-            NetUtils.CloseSocket(Socket);
+            Socket.CloseSocket();
         }
 
         public override bool Equals(object obj)
@@ -100,7 +101,7 @@ namespace Mtf.Network
             var clientSocket = state.Socket;
             try
             {
-                if (NetUtils.IsSocketConnected(clientSocket))
+                if (clientSocket.IsSocketConnected())
                 {
                     var read = clientSocket.EndReceive(ar);
                     if (read > 0)
@@ -114,14 +115,14 @@ namespace Mtf.Network
                     {
                         Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected gracefully.");
                         connectedClients.TryRemove(clientSocket, out _);
-                        NetUtils.CloseSocket(clientSocket);
+                        clientSocket.CloseSocket();
                     }
                 }
                 else
                 {
                     Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} detected as disconnected before EndReceive.");
                     connectedClients.TryRemove(clientSocket, out _);
-                    NetUtils.CloseSocket(clientSocket);
+                    clientSocket.CloseSocket();
                 }
             }
             catch (SocketException ex)
@@ -131,7 +132,7 @@ namespace Mtf.Network
             {
                 Console.Error.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
                 connectedClients.TryRemove(clientSocket, out _);
-                NetUtils.CloseSocket(clientSocket);
+                clientSocket.CloseSocket();
             }
             catch (ObjectDisposedException)
             {
@@ -142,7 +143,7 @@ namespace Mtf.Network
             {
                 Console.Error.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
                 connectedClients.TryRemove(clientSocket, out _);
-                NetUtils.CloseSocket(clientSocket);
+                clientSocket.CloseSocket();
             }
         }
 
@@ -174,7 +175,7 @@ namespace Mtf.Network
             Stop();
             foreach (var client in connectedClients.Keys)
             {
-                NetUtils.CloseSocket(client);
+                client.CloseSocket();
             }
             connectedClients.Clear();
         }
@@ -219,6 +220,11 @@ namespace Mtf.Network
 
         public bool SendBytesInChunksToAllClients(byte[] data, int headerSize = 0)
         {
+            if (data == null)
+            {
+                return false;
+            }
+
             var result = true;
             var chunkSize = Socket.SendBufferSize - headerSize;
             var totalParts = (int)Math.Ceiling((double)data.Length / chunkSize);

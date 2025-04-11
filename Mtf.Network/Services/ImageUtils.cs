@@ -3,12 +3,13 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
 
 namespace Mtf.Network.Services
 {
     public static class ImageUtils
     {
+        private const int Delta = -8;
+
         public static Image ByteArrayToImage(byte[] imageArray)
         {
             return imageArray == null ? null : Image.FromStream(new MemoryStream(imageArray));
@@ -32,7 +33,7 @@ namespace Mtf.Network.Services
                     WinAPI.GetCursorInfo(ref cursorInfo);
                     if (cursorInfo.hCursor != IntPtr.Zero)
                     {
-                        var cursorPosition = new Point(cursorInfo.ptScreenPos.X - rectangle.X, cursorInfo.ptScreenPos.Y - rectangle.Y);
+                        var cursorPosition = new Point(cursorInfo.ptScreenPos.X - rectangle.X + Delta, cursorInfo.ptScreenPos.Y - rectangle.Y + Delta);
                         var hdc = graphics.GetHdc();
                         WinAPI.DrawIcon(hdc, cursorPosition.X, cursorPosition.Y, cursorInfo.hCursor);
                         graphics.ReleaseHdc(hdc);

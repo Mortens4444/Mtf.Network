@@ -26,9 +26,20 @@ namespace Mtf.Network.Services
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetCursorPos(out POINT lpPoint);
 
+#if NET462
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, long dwExtraInfo);
+        
+        //public static void MouseEvent(long dwFlags, long dx, long dy, long cButtons, long dwExtraInfo)
+        public static void MouseEvent(int dwFlags, int dx, int dy, int cButtons, long dwExtraInfo)
+        {
+            mouse_event(dwFlags, dx, dy, cButtons, dwExtraInfo);
+        }
+
+#else
         [DllImport("User32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void MouseEvent(long dwFlags, long dx, long dy, long cButtons, long dwExtraInfo);
-
+#endif
         [DllImport("User32.dll")]
         public static extern bool SetCursorPos(int x, int y);
 

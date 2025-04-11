@@ -32,13 +32,7 @@ namespace Mtf.Network
             if (!Socket.Connected)
             {
                 CancellationTokenSource = new CancellationTokenSource();
-                var result = Socket.BeginConnect(ServerHostnameOrIPAddress, ListenerPortOfServer, null, null);
-                if (!result.AsyncWaitHandle.WaitOne(Timeout))
-                {
-                    var ipAddress = Socket?.GetLocalIPAddressesInfo();
-                    throw new ConnectionFailedException(ServerHostnameOrIPAddress, ListenerPortOfServer, ipAddress);
-                }
-
+                Socket.Connect(ServerHostnameOrIPAddress, ListenerPortOfServer, Timeout);
                 receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);
             }
         }
@@ -82,7 +76,7 @@ namespace Mtf.Network
             }
 
             var receiveBuffer = new byte[BufferSize];
-            while (NetUtils.IsSocketConnected(Socket))
+            while (Socket.IsSocketConnected())
             {
                 try
                 {

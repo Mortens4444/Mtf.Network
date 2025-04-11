@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Mtf.Network.EventArg;
+using Mtf.Network.Extensions;
 using Mtf.Network.Services;
 using System;
 using System.Net.Sockets;
@@ -135,14 +136,14 @@ namespace Mtf.Network
 
         protected override void DisposeManagedResources()
         {
-            if (NetUtils.IsSocketConnected(Socket))
+            if (Socket.IsSocketConnected())
             {
-                NetUtils.CloseSocket(Socket);
+                Socket.CloseSocket();
                 Socket = null;
             }
         }
 
-        protected string TransformMessage(string message, bool appendNewLine)
+        protected static string TransformMessage(string message, bool appendNewLine)
         {
             return appendNewLine ? String.Concat(message, Environment.NewLine) : message;
         }

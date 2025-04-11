@@ -1,5 +1,6 @@
 ﻿using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
+using Mtf.Network.Extensions;
 using Mtf.Network.Services;
 using System;
 using System.Net;
@@ -45,7 +46,7 @@ namespace Mtf.Network
         /// </summary>
         public void Connect()
         {
-            if (NetUtils.IsSocketConnected(socket))
+            if (socket.IsSocketConnected())
             {
                 throw new InvalidOperationException("Already connected to the FTP server.");
             }
@@ -68,9 +69,9 @@ namespace Mtf.Network
         /// </summary>
         public void Disconnect()
         {
-            if (NetUtils.IsSocketConnected(socket))
+            if (socket.IsSocketConnected())
             {
-                NetUtils.CloseSocket(socket);
+                socket.CloseSocket();
                 socket = null;
             }
 
@@ -81,9 +82,9 @@ namespace Mtf.Network
                 dataReceiveCancellationTokenSource = null;
             }
 
-            if (NetUtils.IsSocketConnected(dataSocket))
+            if (dataSocket.IsSocketConnected())
             {
-                NetUtils.CloseSocket(dataSocket);
+                dataSocket.CloseSocket();
                 socket = null;
             }
         }
@@ -487,7 +488,7 @@ namespace Mtf.Network
 
         public async Task Send(string command)
         {
-            if (!NetUtils.IsSocketConnected(socket))
+            if (!socket.IsSocketConnected())
             {
                 throw new InvalidOperationException("Not connected to the FTP server.");
             }
