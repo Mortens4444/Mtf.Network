@@ -38,13 +38,13 @@ namespace Mtf.Network
 
         public Server CommandServer => commandServer;
 
-        public string CommandServerIpAddress => commandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault(ip => ip.StartsWith("192.")) ?? commandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault();
+        public string CommandServerIpAddress => CommandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault(ip => ip.StartsWith("192.")) ?? CommandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault();
         
         public string ImageCaptureServerIpAddress => imageCaptureServer?.Server?.Socket?.GetLocalIPAddresses().FirstOrDefault();
 
-        public string ImageCaptureServerInfo => ImageCaptureServer.Server.Socket.GetLocalIPAddressesInfo();
+        public string ImageCaptureServerInfo => ImageCaptureServer?.Server?.Socket?.GetLocalIPAddressesInfo();
 
-        public string CommandServerInfo => CommandServer.Socket.GetLocalIPAddressesInfo();
+        public string CommandServerInfo => CommandServer?.Socket?.GetLocalIPAddressesInfo();
 
         public void Start()
         {

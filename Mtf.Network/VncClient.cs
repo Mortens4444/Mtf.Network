@@ -75,6 +75,11 @@ namespace Mtf.Network
             client.Disconnect();
         }
 
+        public void Send(string message)
+        {
+            client.Send(message);
+        }
+
         protected virtual void OnErrorOccurred(Exception exception)
         {
             ErrorOccurred?.Invoke(this, new ExceptionEventArgs(exception));
