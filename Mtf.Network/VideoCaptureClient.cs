@@ -129,12 +129,15 @@ namespace Mtf.Network
 
                 var fullImageData = new byte[frameLength];
                 Buffer.BlockCopy(buffer, (int)processedPosition, fullImageData, 0, frameLength);
+
                 OnFrameArrived(fullImageData);
-
                 processedPosition = frameEndPosition + 1;
-            }
 
-            CompactBuffer(processedPosition);
+                if (processedPosition >= bufferLength)
+                {
+                    CompactBuffer(processedPosition);
+                }
+            }
         }
 
         private void CompactBuffer(long bytesToRemove)
@@ -144,17 +147,18 @@ namespace Mtf.Network
                 return;
             }
 
-            var buffer = receiveBuffer.GetBuffer();
-            var bufferLength = receiveBuffer.Length;
-            var remainingLength = bufferLength - bytesToRemove;
-
+            var remainingLength = receiveBuffer.Length - bytesToRemove;
             if (remainingLength > 0)
             {
-                Buffer.BlockCopy(buffer, (int)bytesToRemove, buffer, 0, (int)remainingLength);
+                receiveBuffer.Seek(bytesToRemove, SeekOrigin.Begin);
+                receiveBuffer.SetLength(remainingLength);
+            }
+            else
+            {
+                receiveBuffer.SetLength(0);
             }
 
-            receiveBuffer.SetLength(remainingLength);
-            receiveBuffer.Position = remainingLength;
+            receiveBuffer.Position = 0;
             processedPosition = 0;
         }
 

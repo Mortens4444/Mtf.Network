@@ -51,13 +51,12 @@ namespace Mtf.Network
             {
 
             }
-            else if(message == "Unknown command")
-            {
-                OnErrorOccurred(new InvalidDataException("Server could not recognize the sent command."));
-            }
             else
             {
-                OnErrorOccurred(new InvalidDataException($"Server sent an unexpected message: {message}"));
+                var msg = message == "Unknown command" ?
+                    $"Server could not recognize the sent command: {message}" :
+                    $"Server sent an unexpected message: {message}";
+                OnErrorOccurred(new InvalidDataException(msg));
             }
         }
 
