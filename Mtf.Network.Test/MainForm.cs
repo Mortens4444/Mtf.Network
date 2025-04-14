@@ -2,6 +2,7 @@ using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Models;
+using Mtf.Network.Services.Crypting;
 using System;
 using System.Drawing;
 using System.IO;
@@ -38,7 +39,7 @@ namespace Mtf.Network.Test
             {
                 if (server == null)
                 {
-                    server = new Server(listenerPort: (ushort)nudServerListeningPort.Value);
+                    server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: new CaesarCipher(1));
                     server.DataArrived += DataArrivedEventHandler;
                     server.Start();
                     lblServer.Text = server.ToString();
@@ -105,7 +106,7 @@ namespace Mtf.Network.Test
             {
                 if (client == null)
                 {
-                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value);
+                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, ciphers: new CaesarCipher(1));
                     client.DataArrived += ClientDataArrivedEventHandler;
                 }
                 client.Connect();

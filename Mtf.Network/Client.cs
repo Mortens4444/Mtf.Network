@@ -1,6 +1,5 @@
-﻿using Mtf.Network.Exceptions;
-using Mtf.Network.Extensions;
-using Mtf.Network.Services;
+﻿using Mtf.Network.Extensions;
+using Mtf.Network.Interfaces;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -13,9 +12,13 @@ namespace Mtf.Network
     {
         private Task receiverTask;
 
-        public Client(string serverHost, ushort listenerPort, AddressFamily addressFamily = AddressFamily.InterNetwork,
-            SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp)
-            : base(addressFamily, socketType, protocolType, listenerPort)
+        public Client(string serverHost,
+            ushort listenerPort,
+            AddressFamily addressFamily = AddressFamily.InterNetwork,
+            SocketType socketType = SocketType.Stream,
+            ProtocolType protocolType = ProtocolType.Tcp,
+            params ICipher[] ciphers)
+            : base(addressFamily, socketType, protocolType, listenerPort, ciphers)
         {
             ServerHostnameOrIPAddress = serverHost;
             CreateSocket(addressFamily, socketType, protocolType);

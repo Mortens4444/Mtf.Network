@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Mtf.Network.EventArg;
 using Mtf.Network.Extensions;
-using Mtf.Network.Services;
+using Mtf.Network.Interfaces;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -15,13 +15,15 @@ namespace Mtf.Network
         public event EventHandler<MessageEventArgs> MessageSent;
 
         protected readonly Action<ILogger, Communicator, string, Exception> logErrorAction;
+        private readonly ICipher[] ciphers;
 
-        public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer)
+        public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer, params ICipher[] ciphers)
         {
             ListenerPortOfServer = listenerPortOfServer;
             AddressFamily = addressFamily;
             SocketType = socketType;
             ProtocolType = protocolType;
+            this.ciphers = ciphers;
             logErrorAction = LoggerMessage.Define<Communicator, string>(LogLevel.Error, new EventId(1, "SerialDevice"), "Error occurred in communicator: {Device}, {EventDetails}");
         }
 
@@ -98,6 +100,7 @@ namespace Mtf.Network
             var success = false;
             if (socket?.Connected ?? false)
             {
+                bytes = Transform(bytes, true);
                 success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
                 if (success && appendNewLine)
                 {
@@ -110,6 +113,7 @@ namespace Mtf.Network
 
         protected void OnDataArrived(Socket socket, byte[] data)
         {
+            data = Transform(data, false);
             DataArrived?.Invoke(this, new DataArrivedEventArgs(socket, data));
         }
 
@@ -161,7 +165,24 @@ namespace Mtf.Network
                 return "Not listening...";
             }
 
-            return $"{Socket.LocalEndPoint}";
+            var result = $"{Socket.LocalEndPoint}";
+            if (result.StartsWith(SocketExtensions.IpAny, StringComparison.Ordinal))
+            {
+                result = result.Replace(SocketExtensions.IpAny, Socket.GetLocalIPAddressesInfo("|"));
+            }
+            return result;
+        }
+
+        private byte[] Transform(byte[] data, bool encrypt)
+        {
+            if (ciphers != null)
+            {
+                foreach (var cipher in ciphers)
+                {
+                    data = encrypt ? cipher.Encrypt(data) : cipher.Decrypt(data);
+                }
+            }
+            return data;
         }
     }
 }

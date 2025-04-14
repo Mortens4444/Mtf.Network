@@ -1,6 +1,8 @@
 using Mtf.Network.Services;
+using NUnit.Framework;
+using System;
 
-namespace Mtf.Network.UnitTest
+namespace Mtf.Network.UnitTest.Services
 {
     public class BufferHelperTests
     {
@@ -8,9 +10,9 @@ namespace Mtf.Network.UnitTest
         public void GetNext_Int_ReturnsExpectedValue()
         {
             byte[] buffer = { 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 };
-            int start = 0;
+            var start = 0;
 
-            int value = BufferHelper.GetNextInt(buffer, ref start);
+            var value = BufferHelper.GetNextInt(buffer, ref start);
 
             Assert.Multiple(() =>
             {
@@ -23,9 +25,9 @@ namespace Mtf.Network.UnitTest
         public void GetNext_Long_ReturnsExpectedValue()
         {
             byte[] buffer = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            int start = 0;
+            var start = 0;
 
-            long value = BufferHelper.GetNextLong(buffer, ref start);
+            var value = BufferHelper.GetNextLong(buffer, ref start);
 
             Assert.Multiple(() =>
             {
@@ -37,8 +39,8 @@ namespace Mtf.Network.UnitTest
         [Test]
         public void GetNext_ThrowsException_WhenBufferIsNull()
         {
-            byte[]? buffer = null;
-            int start = 0;
+            byte[] buffer = null;
+            var start = 0;
 
             Assert.Throws<ArgumentNullException>(() => BufferHelper.GetNextInt(buffer, ref start));
         }
@@ -47,7 +49,7 @@ namespace Mtf.Network.UnitTest
         public void GetNext_ThrowsException_WhenStartOutOfRange()
         {
             byte[] buffer = { 0x01, 0x00, 0x00, 0x00 };
-            int start = 5;
+            var start = 5;
 
             Assert.Throws<ArgumentOutOfRangeException>(() => BufferHelper.GetNextInt(buffer, ref start));
         }
@@ -56,7 +58,7 @@ namespace Mtf.Network.UnitTest
         public void GetNext_ThrowsException_WhenBufferTooSmallForType()
         {
             byte[] buffer = { 0x01, 0x00 };
-            int start = 0;
+            var start = 0;
 
             Assert.Throws<ArgumentException>(() => BufferHelper.GetNextInt(buffer, ref start));
         }

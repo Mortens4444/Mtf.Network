@@ -9,6 +9,8 @@ namespace Mtf.Network.Extensions
 {
     public static class SocketExtensions
     {
+        public const string IpAny = "0.0.0.0:";
+
         public static IEnumerable<string> GetLocalIPAddresses(this Socket socket)
         {
             var ipAddress = socket?.LocalEndPoint?.ToString();
@@ -16,23 +18,23 @@ namespace Mtf.Network.Extensions
             {
                 return Enumerable.Empty<string>();
             }
-            if (ipAddress.StartsWith("0.0.0.0:", StringComparison.OrdinalIgnoreCase))
+            if (ipAddress.StartsWith(IpAny, StringComparison.OrdinalIgnoreCase))
             {
                 return NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork);
             }
             return new string[] { ipAddress.Substring(0, ipAddress.IndexOf(':')) };
         }
 
-        public static string GetLocalIPAddressesInfo(this Socket socket)
+        public static string GetLocalIPAddressesInfo(this Socket socket, string separator = ", ")
         {
             var ipAddress = socket?.LocalEndPoint?.ToString();
             if (String.IsNullOrEmpty(ipAddress))
             {
                 return String.Empty;
             }
-            if (ipAddress.StartsWith("0.0.0.0:", StringComparison.OrdinalIgnoreCase))
+            if (ipAddress.StartsWith(IpAny, StringComparison.OrdinalIgnoreCase))
             {
-                return $"{ipAddress} {String.Join(", ", NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork))}";
+                return $"{ipAddress} {String.Join(separator, NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork))}";
             }
             return ipAddress;
         }

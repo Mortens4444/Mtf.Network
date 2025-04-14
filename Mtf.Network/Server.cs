@@ -1,4 +1,5 @@
 ﻿using Mtf.Network.Extensions;
+using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
@@ -15,8 +16,11 @@ namespace Mtf.Network
     {
         private readonly ConcurrentDictionary<Socket, string> connectedClients = new ConcurrentDictionary<Socket, string>();
 
-        public Server(AddressFamily addressFamily = AddressFamily.InterNetwork, SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp,
-            ushort listenerPort = 0) : base(addressFamily, socketType, protocolType, listenerPort)
+        public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
+            SocketType socketType = SocketType.Stream,
+            ProtocolType protocolType = ProtocolType.Tcp,
+            ushort listenerPort = 0,
+            params ICipher[] ciphers) : base(addressFamily, socketType, protocolType, listenerPort, ciphers)
         {
         }
 
