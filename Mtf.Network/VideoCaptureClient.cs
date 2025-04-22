@@ -12,7 +12,7 @@ namespace Mtf.Network
         private readonly string serverIp;
         private readonly ushort serverPort;
         private MemoryStream receiveBuffer;
-        private long processedPosition = 0;
+        private long processedPosition;
 
         private Client client;
         private int started;
@@ -129,15 +129,12 @@ namespace Mtf.Network
 
                 var fullImageData = new byte[frameLength];
                 Buffer.BlockCopy(buffer, (int)processedPosition, fullImageData, 0, frameLength);
-
                 OnFrameArrived(fullImageData);
-                processedPosition = frameEndPosition + 1;
 
-                if (processedPosition >= bufferLength)
-                {
-                    CompactBuffer(processedPosition);
-                }
+                processedPosition = frameEndPosition + 1;
             }
+
+            CompactBuffer(processedPosition);
         }
 
         private void CompactBuffer(long bytesToRemove)
@@ -147,18 +144,17 @@ namespace Mtf.Network
                 return;
             }
 
-            var remainingLength = receiveBuffer.Length - bytesToRemove;
+            var buffer = receiveBuffer.GetBuffer();
+            var bufferLength = receiveBuffer.Length;
+            var remainingLength = bufferLength - bytesToRemove;
+
             if (remainingLength > 0)
             {
-                receiveBuffer.Seek(bytesToRemove, SeekOrigin.Begin);
-                receiveBuffer.SetLength(remainingLength);
-            }
-            else
-            {
-                receiveBuffer.SetLength(0);
+                Buffer.BlockCopy(buffer, (int)bytesToRemove, buffer, 0, (int)remainingLength);
             }
 
-            receiveBuffer.Position = 0;
+            receiveBuffer.SetLength(remainingLength);
+            receiveBuffer.Position = remainingLength;
             processedPosition = 0;
         }
 
