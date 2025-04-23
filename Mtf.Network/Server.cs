@@ -4,6 +4,7 @@ using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -117,14 +118,14 @@ namespace Mtf.Network
                     }
                     else
                     {
-                        Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected gracefully.");
+                        Console.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} disconnected gracefully.");
                         connectedClients.TryRemove(clientSocket, out _);
                         clientSocket.CloseSocket();
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Client {clientSocket?.RemoteEndPoint} detected as disconnected before EndReceive.");
+                    Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} detected as disconnected before EndReceive.");
                     connectedClients.TryRemove(clientSocket, out _);
                     clientSocket.CloseSocket();
                 }
@@ -134,13 +135,13 @@ namespace Mtf.Network
                     ex.SocketErrorCode == SocketError.ConnectionAborted || // WSAECONNABORTED
                     ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
             {
-                Console.Error.WriteLine($"Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
+                Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
                 connectedClients.TryRemove(clientSocket, out _);
                 clientSocket.CloseSocket();
             }
             catch (ObjectDisposedException)
             {
-                Console.Error.WriteLine($"Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
+                Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
                 connectedClients.TryRemove(clientSocket, out _);
             }
             catch (Exception ex) 
@@ -164,12 +165,12 @@ namespace Mtf.Network
                 }
                 catch (ObjectDisposedException)
                 {
-                    Console.Error.WriteLine("ListenerEngine - Socket was disposed.");
+                    Console.Error.WriteLine($"{nameof(Server)} {nameof(ListenerEngine)} - Socket was disposed.");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"ListenerEngine - Unexpected error: {ex.Message}");
+                    Console.Error.WriteLine($"{nameof(Server)} {nameof(ListenerEngine)} - Unexpected error: {ex.Message}");
                 }
             }
         }
@@ -232,6 +233,7 @@ namespace Mtf.Network
             var result = true;
             var chunkSize = Socket.SendBufferSize - headerSize;
             var totalParts = (int)Math.Ceiling((double)data.Length / chunkSize);
+            Debug.WriteLine($"{nameof(Server)} - Sending data in {totalParts} chunk(s).");
             for (int i = 0; i < totalParts; i++)
             {
                 var offset = i * chunkSize;

@@ -31,13 +31,13 @@ namespace Mtf.Network
 
         public Server StartVideoCaptureServer(CancellationTokenSource cancellationTokenSource)
         {
-            this.cancellationTokenSource = cancellationTokenSource;
+            this.cancellationTokenSource = cancellationTokenSource ?? new CancellationTokenSource();
             int retryCount = 0;
 
             Server = new Server();
             Server.Start();
             Server.SetBufferSize(BufferSize);
-
+            
             _ = Task.Run(async () =>
             {
                 var waitTime = 1000 / FPS;
@@ -105,8 +105,8 @@ namespace Mtf.Network
             {
                 if (disposing)
                 {
-                    cancellationTokenSource?.Cancel();
-                    cancellationTokenSource?.Dispose();
+                    cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Dispose();
                     Server?.Dispose();
                 }
                 disposed = true;

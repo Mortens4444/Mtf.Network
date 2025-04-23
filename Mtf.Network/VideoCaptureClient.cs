@@ -1,5 +1,6 @@
 ﻿using Mtf.Network.EventArg;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -111,9 +112,9 @@ namespace Mtf.Network
 
                 var searchEndFrom = processedPosition + PngSignature.Length;
                 var endIndexMarkerStart = FindSequence(buffer, bufferLength, searchEndFrom, PngEndMarker);
-
                 if (endIndexMarkerStart == -1)
                 {
+                    Debug.WriteLine($"{nameof(VideoCaptureClient)} - PngEndMarker not found.");
                     break;
                 }
 
