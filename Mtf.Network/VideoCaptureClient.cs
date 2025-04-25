@@ -1,8 +1,10 @@
 ﻿using Mtf.Network.EventArg;
+using Mtf.Network.Interfaces;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace Mtf.Network
@@ -10,11 +12,16 @@ namespace Mtf.Network
     public class VideoCaptureClient : IDisposable
     {
         public int BufferSize { get; set; } = Constants.ImageBufferSize;
+
         private readonly string serverIp;
         private readonly ushort serverPort;
+        private readonly AddressFamily addressFamily;
+        private readonly SocketType socketType;
+        private readonly ProtocolType protocolType;
+        private readonly ICipher[] ciphers;
+        
         private MemoryStream receiveBuffer;
         private long processedPosition;
-
         private Client client;
         private int started;
         private bool disposed;
@@ -25,7 +32,8 @@ namespace Mtf.Network
         private static readonly byte[] PngSignature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
         private static readonly byte[] PngEndMarker = { 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }; // IEND chunk type + CRC
 
-        public VideoCaptureClient(string serverIp, int serverPort)
+        public VideoCaptureClient(string serverIp, int serverPort, AddressFamily addressFamily = AddressFamily.InterNetwork,
+            SocketType socketType = SocketType.Stream, ProtocolType protocolType = ProtocolType.Tcp, params ICipher[] ciphers)
         {
             if (String.IsNullOrWhiteSpace(serverIp))
             {
@@ -39,6 +47,10 @@ namespace Mtf.Network
 
             this.serverIp = serverIp == "0.0.0.0" ? "localhost" : serverIp;
             this.serverPort = (ushort)serverPort;
+            this.addressFamily = addressFamily;
+            this.socketType = socketType;
+            this.protocolType = protocolType;
+            this.ciphers = ciphers;
 
             receiveBuffer = new MemoryStream(BufferSize);
         }
@@ -47,7 +59,7 @@ namespace Mtf.Network
         {
             if (Interlocked.Exchange(ref started, 1) == 0)
             {
-                client = new Client(serverIp, serverPort)
+                client = new Client(serverIp, serverPort, addressFamily, socketType, protocolType, ciphers)
                 {
                     Timeout = timeout
                 };

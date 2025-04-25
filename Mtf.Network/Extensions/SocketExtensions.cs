@@ -10,6 +10,7 @@ namespace Mtf.Network.Extensions
     public static class SocketExtensions
     {
         public const string IpAny = "0.0.0.0:";
+        public const string IpAnyWithoutColon = "0.0.0.0";
 
         public static IEnumerable<string> GetLocalIPAddresses(this Socket socket)
         {
@@ -27,16 +28,7 @@ namespace Mtf.Network.Extensions
 
         public static string GetLocalIPAddressesInfo(this Socket socket, string separator = ", ")
         {
-            var ipAddress = socket?.LocalEndPoint?.ToString();
-            if (String.IsNullOrEmpty(ipAddress))
-            {
-                return String.Empty;
-            }
-            if (ipAddress.StartsWith(IpAny, StringComparison.OrdinalIgnoreCase))
-            {
-                return $"{ipAddress} {String.Join(separator, NetUtils.GetLocalIPAddresses(AddressFamily.InterNetwork))}";
-            }
-            return ipAddress;
+            return socket?.LocalEndPoint?.GetEndPointInfo(separator);
         }
 
         public static void Connect(this Socket socket, string serverIp, ushort serverPort, int timeoutMs)

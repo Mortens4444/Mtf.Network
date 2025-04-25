@@ -16,13 +16,16 @@ namespace Mtf.Network
     public class Server : Communicator
     {
         private readonly ConcurrentDictionary<Socket, string> connectedClients = new ConcurrentDictionary<Socket, string>();
+        private readonly IPAddress ipAddress;
 
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream,
             ProtocolType protocolType = ProtocolType.Tcp,
+            IPAddress ipAddress = null,
             ushort listenerPort = 0,
             params ICipher[] ciphers) : base(addressFamily, socketType, protocolType, listenerPort, ciphers)
         {
+            this.ipAddress = ipAddress ?? IPAddress.Any;
         }
 
         /// <summary>
@@ -31,7 +34,7 @@ namespace Mtf.Network
         public void Start()
         {
             Stop();
-            Initialize(AddressFamily, SocketType, ProtocolType);
+            Initialize();
             CancellationTokenSource = new CancellationTokenSource();
             _ = Task.Run(ListenerEngine, CancellationTokenSource.Token);
         }
@@ -55,9 +58,9 @@ namespace Mtf.Network
             return base.GetHashCode();
         }
 
-        private void Initialize(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+        private void Initialize()
         {
-            Socket = NetUtils.CreateSocket(IPAddress.Any, ListenerPortOfServer, addressFamily, socketType, protocolType, true);
+            Socket = NetUtils.CreateSocket(ipAddress, ListenerPortOfServer, AddressFamily, SocketType, ProtocolType, true);
             if (ListenerPortOfServer == 0)
             {
                 ListenerPortOfServer = (ushort)((IPEndPoint)Socket.LocalEndPoint).Port;

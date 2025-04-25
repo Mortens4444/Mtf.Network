@@ -168,7 +168,7 @@ namespace Mtf.Network
             var result = $"{Socket.LocalEndPoint}";
             if (result.StartsWith(SocketExtensions.IpAny, StringComparison.Ordinal))
             {
-                result = result.Replace(SocketExtensions.IpAny, Socket.GetLocalIPAddressesInfo("|"));
+                result = result.Replace(SocketExtensions.IpAnyWithoutColon, Socket.GetLocalIPAddressesInfo("|"));
             }
             return result;
         }

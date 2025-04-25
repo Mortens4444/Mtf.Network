@@ -21,7 +21,7 @@ namespace Mtf.Network
             : base(addressFamily, socketType, protocolType, listenerPort, ciphers)
         {
             ServerHostnameOrIPAddress = serverHost;
-            CreateSocket(addressFamily, socketType, protocolType);
+            CreateSocket();
         }
 
         public int Timeout { get; set; } = Constants.SocketConnectionTimeout;
@@ -58,14 +58,14 @@ namespace Mtf.Network
             base.DisposeManagedResources();
         }
 
-        private void CreateSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+        private void CreateSocket()
         {
-            Socket = new Socket(addressFamily, socketType, protocolType)
+            Socket = new Socket(AddressFamily, SocketType, ProtocolType)
             {
                 DontFragment = true
             };
             SetBufferSize();
-            if (protocolType != ProtocolType.Udp)
+            if (ProtocolType != ProtocolType.Udp)
             {
                 Socket.NoDelay = true;
             }

@@ -6,10 +6,9 @@
     <Nullable>disable</Nullable>
     <OutputType>Library</OutputType>
     <AnalysisLevel>latest-all</AnalysisLevel>
-    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <PackageReadmeFile>Mtf.Network.Interfaces - ReadMe.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>False</UseWindowsForms>
     <WarningLevel>9999</WarningLevel>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
@@ -37,30 +36,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
     <DebugType>portable</DebugType>
   </PropertyGroup>
-
-  <Target Name="SetFileVersionFromNuspec" BeforeTargets="BeforeBuild">
-    <XmlPeek XmlInputPath="../.nuspec" Query="//*[local-name()='version']/text()">
-      <Output TaskParameter="Result" PropertyName="FileVersion" />
-    </XmlPeek>
-  </Target>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.2" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
-    <PackageReference Include="System.Drawing.Common" Version="9.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Mtf.Network.Interfaces" Version="1.0.3" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
-  </ItemGroup>
 
 </Project>

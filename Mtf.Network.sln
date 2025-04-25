@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtf.Network.Test", "Mtf.Net
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtf.Network.UnitTest", "Mtf.Network.UnitTest\Mtf.Network.UnitTest.csproj", "{6C444CFF-AEAA-4811-BE82-0E6A50F0B853}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtf.Network.Interfaces", "Mtf.Network.Interfaces\Mtf.Network.Interfaces.csproj", "{7D867558-3029-42EE-9AC3-A1D4EE8FA6BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{6C444CFF-AEAA-4811-BE82-0E6A50F0B853}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C444CFF-AEAA-4811-BE82-0E6A50F0B853}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C444CFF-AEAA-4811-BE82-0E6A50F0B853}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D867558-3029-42EE-9AC3-A1D4EE8FA6BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D867558-3029-42EE-9AC3-A1D4EE8FA6BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D867558-3029-42EE-9AC3-A1D4EE8FA6BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D867558-3029-42EE-9AC3-A1D4EE8FA6BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
