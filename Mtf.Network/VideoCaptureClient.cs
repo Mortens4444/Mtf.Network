@@ -114,37 +114,33 @@ namespace Mtf.Network
 
             while (true)
             {
-                var startIndex = FindSequence(buffer, bufferLength, processedPosition, PngSignature);
-                if (startIndex == -1)
+                var start = FindSequence(buffer, bufferLength, processedPosition, PngSignature);
+                if (start == -1)
                 {
                     break;
                 }
 
-                processedPosition = startIndex;
-
-                var searchEndFrom = processedPosition + PngSignature.Length;
-                var endIndexMarkerStart = FindSequence(buffer, bufferLength, searchEndFrom, PngEndMarker);
-                if (endIndexMarkerStart == -1)
+                var end = FindSequence(buffer, bufferLength, start + PngSignature.Length, PngEndMarker);
+                if (end == -1)
                 {
-                    Debug.WriteLine($"{nameof(VideoCaptureClient)} - PngEndMarker not found.");
                     break;
                 }
 
-                var frameEndPosition = endIndexMarkerStart + PngEndMarker.Length - 1;
-                var frameLength = (int)(frameEndPosition - processedPosition + 1);
+                var frameEnd = end + PngEndMarker.Length;
+                var frameLength = frameEnd - start;
 
-                if (frameLength <= 0 || processedPosition + frameLength > bufferLength)
+                if (frameLength <= 0 || frameEnd > bufferLength)
                 {
-                    OnErrorOccurred(new InvalidDataException($"Invalid frame length calculated: {frameLength} at position {processedPosition}"));
-                    processedPosition = frameEndPosition + 1;
+                    OnErrorOccurred(new InvalidDataException($"Invalid frame length at position {start}."));
+                    processedPosition = frameEnd;
                     continue;
                 }
 
-                var fullImageData = new byte[frameLength];
-                Buffer.BlockCopy(buffer, (int)processedPosition, fullImageData, 0, frameLength);
-                OnFrameArrived(fullImageData);
+                var frameData = new byte[frameLength];
+                Buffer.BlockCopy(buffer, start, frameData, 0, frameLength);
+                OnFrameArrived(frameData);
 
-                processedPosition = frameEndPosition + 1;
+                processedPosition = frameEnd;
             }
 
             CompactBuffer(processedPosition);
@@ -171,35 +167,31 @@ namespace Mtf.Network
             processedPosition = 0;
         }
 
-        private static int FindSequence(byte[] bufferToSearch, long bufferLength, long startOffset, byte[] sequenceToFind)
+        private static int FindSequence(byte[] buffer, long length, long offset, byte[] pattern)
         {
-            if (sequenceToFind == null || sequenceToFind.Length == 0 || bufferToSearch == null || bufferLength == 0)
+            if (pattern == null || pattern.Length == 0 || buffer == null || length == 0 || offset >= length)
             {
                 return -1;
             }
 
-            if (startOffset < 0)
+            var maxIndex = length - pattern.Length;
+            for (var i = offset; i <= maxIndex; i++)
             {
-                startOffset = 0;
-            }
-
-            var maxSearchIndex = bufferLength - sequenceToFind.Length;
-            if (startOffset > maxSearchIndex)
-            {
-                return -1;
-            }
-
-            for (long i = startOffset; i <= maxSearchIndex; i++)
-            {
-                var match = true;
-                for (int j = 0; j < sequenceToFind.Length; j++)
+                if (buffer[i] != pattern[0])
                 {
-                    if (bufferToSearch[i + j] != sequenceToFind[j])
+                    continue;
+                }
+
+                var match = true;
+                for (var j = 1; j < pattern.Length; j++)
+                {
+                    if (buffer[i + j] != pattern[j])
                     {
                         match = false;
                         break;
                     }
                 }
+
                 if (match)
                 {
                     return (int)i;
@@ -220,7 +212,8 @@ namespace Mtf.Network
                 using (var stream = new MemoryStream(fullImageData))
                 {
                     var image = Image.FromStream(stream, false, false);
-                    FrameArrived?.Invoke(this, new FrameArrivedEventArgs(image));
+                    var clonedImage = (Image)image.Clone();
+                    FrameArrived?.Invoke(this, new FrameArrivedEventArgs(clonedImage));
                 }
             }
             catch (ArgumentException ex)

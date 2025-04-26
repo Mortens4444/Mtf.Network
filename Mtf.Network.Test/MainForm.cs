@@ -1,6 +1,7 @@
 using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
+using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
 using Mtf.Network.Services.Crypting;
 using System;
@@ -39,7 +40,8 @@ namespace Mtf.Network.Test
             {
                 if (server == null)
                 {
-                    server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: new CaesarCipher(1));
+                    var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: ciphers);
                     server.DataArrived += DataArrivedEventHandler;
                     server.Start();
                     lblServer.Text = server.ToString();
@@ -106,7 +108,8 @@ namespace Mtf.Network.Test
             {
                 if (client == null)
                 {
-                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, ciphers: new CaesarCipher(1));
+                    var ciphers = chkClientUseEnrypt.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, ciphers: ciphers);
                     client.DataArrived += ClientDataArrivedEventHandler;
                 }
                 client.Connect();
@@ -126,7 +129,8 @@ namespace Mtf.Network.Test
             {
                 if (client2 == null)
                 {
-                    client2 = new Client(tbServerAddress.Text, (ushort)nudServerPort2.Value);
+                    var ciphers = chkClientUseEnrypt2.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    client2 = new Client(tbServerAddress.Text, (ushort)nudServerPort2.Value, ciphers: ciphers);
                     client2.DataArrived += ClientDataArrivedEventHandler2;
                 }
                 client2.Connect();
@@ -628,8 +632,9 @@ namespace Mtf.Network.Test
             try
             {
                 var vcc = new VideoCaptureClient(tbImageProviderIpAddress.Text, (ushort)nudImageProviderPort.Value);
+                vcc.BufferSize = 409600;
                 vcc.FrameArrived += Vcc_FrameArrived;
-                vcc.Start(10000);
+                vcc.Start(20000);
             }
             catch (Exception ex)
             {

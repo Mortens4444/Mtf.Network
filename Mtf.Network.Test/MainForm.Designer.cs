@@ -35,20 +35,20 @@ namespace Mtf.Network.Test
             components = new System.ComponentModel.Container();
             var listViewItem1 = new ListViewItem(new string[] { "$AV_AVG", "Folder", "" }, "folder");
             var listViewItem2 = new ListViewItem(new string[] { "$Recycle.Bin", "Folder", "" }, "folder");
-            var listViewItem3 = new ListViewItem(new string[] { "$WinREAgent", "Folder", "" }, "folder");
-            var listViewItem4 = new ListViewItem(new string[] { "Adjustment Program", "Folder", "" }, "folder");
-            var listViewItem5 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
-            var listViewItem6 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
-            var listViewItem7 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
-            var listViewItem8 = new ListViewItem(new string[] { "Databases", "Folder", "" }, "folder");
-            var listViewItem9 = new ListViewItem(new string[] { "Depends", "Folder", "" }, "folder");
-            var listViewItem10 = new ListViewItem(new string[] { "DesktopUpdater", "Folder", "" }, "folder");
-            var listViewItem11 = new ListViewItem(new string[] { "dicomdir", "Folder", "" }, "folder");
-            var listViewItem12 = new ListViewItem(new string[] { "Documents and Settings", "Folder", "" }, "folder");
-            var listViewItem13 = new ListViewItem(new string[] { "ECGo", "Folder", "" }, "folder");
-            var listViewItem14 = new ListViewItem(new string[] { "ffmpeg-master-latest-win64-gpl", "Folder", "" }, "folder");
-            var listViewItem15 = new ListViewItem(new string[] { "gcc", "Folder", "" }, "folder");
-            var listViewItem16 = new ListViewItem(new string[] { "gradle", "Folder", "" }, "folder");
+            var listViewItem3 = new ListViewItem(new string[] { "Adjustment Program", "Folder", "" }, "folder");
+            var listViewItem4 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
+            var listViewItem5 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
+            var listViewItem6 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
+            var listViewItem7 = new ListViewItem(new string[] { "Databases", "Folder", "" }, "folder");
+            var listViewItem8 = new ListViewItem(new string[] { "Depends", "Folder", "" }, "folder");
+            var listViewItem9 = new ListViewItem(new string[] { "DesktopUpdater", "Folder", "" }, "folder");
+            var listViewItem10 = new ListViewItem(new string[] { "dicomdir", "Folder", "" }, "folder");
+            var listViewItem11 = new ListViewItem(new string[] { "Documents and Settings", "Folder", "" }, "folder");
+            var listViewItem12 = new ListViewItem(new string[] { "ECGo", "Folder", "" }, "folder");
+            var listViewItem13 = new ListViewItem(new string[] { "ffmpeg-master-latest-win64-gpl", "Folder", "" }, "folder");
+            var listViewItem14 = new ListViewItem(new string[] { "gcc", "Folder", "" }, "folder");
+            var listViewItem15 = new ListViewItem(new string[] { "gradle", "Folder", "" }, "folder");
+            var listViewItem16 = new ListViewItem(new string[] { "inetpub", "Folder", "" }, "folder");
             var listViewItem17 = new ListViewItem(new string[] { "Install", "Folder", "" }, "folder");
             var listViewItem18 = new ListViewItem(new string[] { "Intel", "Folder", "" }, "folder");
             var listViewItem19 = new ListViewItem(new string[] { "logs", "Folder", "" }, "folder");
@@ -85,12 +85,13 @@ namespace Mtf.Network.Test
             var listViewItem50 = new ListViewItem(new string[] { "DumpStack.log.tmp", ".TMP File", "12 kB" }, ".tmp");
             var listViewItem51 = new ListViewItem(new string[] { "hiberfil.sys", ".SYS File", "6,3 GB" }, ".sys");
             var listViewItem52 = new ListViewItem(new string[] { "Not recognized checkmate.png", ".PNG File", "66,1 kB" }, ".png");
-            var listViewItem53 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "33 GB" }, ".sys");
+            var listViewItem53 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "34,3 GB" }, ".sys");
             var listViewItem54 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "16 MB" }, ".sys");
             var listViewItem55 = new ListViewItem(new string[] { "vfcompat.dll", ".DLL File", "65,7 kB" }, ".dll");
             tabControl = new TabControl();
             tabPage1 = new TabPage();
             panel1 = new Panel();
+            chkUseEncrypt = new CheckBox();
             lblServer = new Label();
             btnSendToClient = new Button();
             label7 = new Label();
@@ -103,6 +104,7 @@ namespace Mtf.Network.Test
             nudServerListeningPort = new NumericUpDown();
             tabPage2 = new TabPage();
             panel2 = new Panel();
+            chkClientUseEnrypt = new CheckBox();
             btnSendToServer2 = new Button();
             label24 = new Label();
             rtbClientSend2 = new RichTextBox();
@@ -201,6 +203,7 @@ namespace Mtf.Network.Test
             btnStartVncServer = new Button();
             tabPage12 = new TabPage();
             btnSunellCameraTest = new Button();
+            chkClientUseEnrypt2 = new CheckBox();
             tabControl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -264,6 +267,7 @@ namespace Mtf.Network.Test
             // panel1
             // 
             panel1.BackColor = Color.Gray;
+            panel1.Controls.Add(chkUseEncrypt);
             panel1.Controls.Add(lblServer);
             panel1.Controls.Add(btnSendToClient);
             panel1.Controls.Add(label7);
@@ -280,10 +284,20 @@ namespace Mtf.Network.Test
             panel1.Size = new Size(817, 374);
             panel1.TabIndex = 0;
             // 
+            // chkUseEncrypt
+            // 
+            chkUseEncrypt.AutoSize = true;
+            chkUseEncrypt.Location = new Point(97, 37);
+            chkUseEncrypt.Name = "chkUseEncrypt";
+            chkUseEncrypt.Size = new Size(88, 19);
+            chkUseEncrypt.TabIndex = 10;
+            chkUseEncrypt.Text = "Use encrypt";
+            chkUseEncrypt.UseVisualStyleBackColor = true;
+            // 
             // lblServer
             // 
             lblServer.AutoSize = true;
-            lblServer.Location = new Point(97, 37);
+            lblServer.Location = new Point(213, 37);
             lblServer.Name = "lblServer";
             lblServer.Size = new Size(0, 15);
             lblServer.TabIndex = 9;
@@ -393,6 +407,8 @@ namespace Mtf.Network.Test
             // panel2
             // 
             panel2.BackColor = Color.Gray;
+            panel2.Controls.Add(chkClientUseEnrypt2);
+            panel2.Controls.Add(chkClientUseEnrypt);
             panel2.Controls.Add(btnSendToServer2);
             panel2.Controls.Add(label24);
             panel2.Controls.Add(rtbClientSend2);
@@ -416,6 +432,16 @@ namespace Mtf.Network.Test
             panel2.Name = "panel2";
             panel2.Size = new Size(817, 374);
             panel2.TabIndex = 0;
+            // 
+            // chkClientUseEnrypt
+            // 
+            chkClientUseEnrypt.AutoSize = true;
+            chkClientUseEnrypt.Location = new Point(197, 33);
+            chkClientUseEnrypt.Name = "chkClientUseEnrypt";
+            chkClientUseEnrypt.Size = new Size(115, 19);
+            chkClientUseEnrypt.TabIndex = 18;
+            chkClientUseEnrypt.Text = "Client use enrypt";
+            chkClientUseEnrypt.UseVisualStyleBackColor = true;
             // 
             // btnSendToServer2
             // 
@@ -1403,6 +1429,16 @@ namespace Mtf.Network.Test
             btnSunellCameraTest.UseVisualStyleBackColor = true;
             btnSunellCameraTest.Click += BtnSunellCameraTest_Click;
             // 
+            // chkClientUseEnrypt2
+            // 
+            chkClientUseEnrypt2.AutoSize = true;
+            chkClientUseEnrypt2.Location = new Point(584, 31);
+            chkClientUseEnrypt2.Name = "chkClientUseEnrypt2";
+            chkClientUseEnrypt2.Size = new Size(115, 19);
+            chkClientUseEnrypt2.TabIndex = 19;
+            chkClientUseEnrypt2.Text = "Client use enrypt";
+            chkClientUseEnrypt2.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1569,5 +1605,8 @@ namespace Mtf.Network.Test
         private NumericUpDown nudVncClientIpAddress;
         private TextBox tbVncClientIpAddress;
         private Controls.MtfPictureBox pbVncImages;
+        private CheckBox chkUseEncrypt;
+        private CheckBox chkClientUseEnrypt;
+        private CheckBox chkClientUseEnrypt2;
     }
 }
