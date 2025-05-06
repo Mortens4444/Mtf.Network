@@ -5,6 +5,7 @@ using Mtf.Network.Interfaces;
 using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
@@ -70,6 +71,16 @@ namespace Mtf.Network
             return result;
         }
 
+        public async Task<bool> SendAsync(string message, bool appendNewLine = false)
+        {
+            var result = await SendAsync(Socket, message, appendNewLine).ConfigureAwait(false);
+            if (result)
+            {
+                OnMessageSent(message);
+            }
+            return result;
+        }
+
         public bool Send(byte[] bytes, bool appendNewLine = false)
         {
             try
@@ -90,25 +101,168 @@ namespace Mtf.Network
             }
         }
 
+        public async Task<bool> SendAsync(byte[] bytes, bool appendNewLine = false)
+        {
+            if (Socket?.Connected != true)
+                return false;
+
+            try
+            {
+                if (!await SendAsync(Socket, bytes))
+                    return false;
+
+                if (appendNewLine)
+                {
+                    var newLineBytes = Encoding.GetBytes(Environment.NewLine);
+                    if (!await SendAsync(Socket, newLineBytes))
+                        return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private Task<bool> SendAsync(Socket socket, byte[] data)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            if (socket?.Connected != true)
+            {
+                tcs.SetResult(false);
+                return tcs.Task;
+            }
+
+            var args = new SocketAsyncEventArgs();
+            args.SetBuffer(data, 0, data.Length);
+
+            EventHandler<SocketAsyncEventArgs> handler = null;
+            handler = (s, e) =>
+            {
+                args.Completed -= handler;
+                args.Dispose();
+
+                var success = e.SocketError == SocketError.Success && e.BytesTransferred == data.Length;
+                tcs.SetResult(success);
+            };
+
+            args.Completed += handler;
+
+            if (!socket.SendAsync(args))
+            {
+                handler(socket, args);
+            }
+
+            return tcs.Task;
+        }
+
         public bool Send(Socket socket, string message, bool appendNewLine = false)
         {
             return Send(socket, ConvertMessageToData(message, appendNewLine));
         }
 
+        public Task<bool> SendAsync(Socket socket, string message, bool appendNewLine = false)
+        {
+            return SendAsync(socket, ConvertMessageToData(message, appendNewLine));
+        }
+
         public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false)
         {
-            var success = false;
-            if (socket?.Connected ?? false)
+            if (socket?.Connected != true)
             {
-                bytes = Transform(bytes, true);
-                success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
-                if (success && appendNewLine)
-                {
-                    var enterBytes = Encoding.GetBytes(Environment.NewLine);
-                    success &= socket.Send(enterBytes) == enterBytes.Length;
-                }
+                return false;
+            }
+
+            bytes = Transform(bytes, true);
+            var success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
+            if (success && appendNewLine)
+            {
+                var enterBytes = Encoding.GetBytes(Environment.NewLine);
+                success &= socket.Send(enterBytes) == enterBytes.Length;
             }
             return success;
+        }
+
+        public Task<bool> SendAsync(Socket socket, byte[] bytes, bool appendNewLine = false)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            if (socket?.Connected != true)
+            {
+                tcs.SetResult(false);
+                return tcs.Task;
+            }
+
+            bytes = Transform(bytes, true);
+
+            var args = new SocketAsyncEventArgs();
+            args.SetBuffer(bytes, 0, bytes.Length);
+
+            EventHandler<SocketAsyncEventArgs> handler = null;
+            handler = (s, e) =>
+            {
+                args.Completed -= handler;
+                args.Dispose();
+
+                if (e.SocketError == SocketError.Success && e.BytesTransferred == bytes.Length)
+                {
+                    if (appendNewLine)
+                    {
+                        SendNewLine(socket).ContinueWith(t =>
+                        {
+                            tcs.SetResult(t.Result);
+                        }, TaskScheduler.Default);
+                    }
+                    else
+                    {
+                        tcs.SetResult(true);
+                    }
+                }
+                else
+                {
+                    tcs.SetResult(false);
+                }
+            };
+
+            args.Completed += handler;
+
+            if (!socket.SendAsync(args))
+            {
+                handler(socket, args);
+            }
+
+            return tcs.Task;
+        }
+
+        private Task<bool> SendNewLine(Socket socket)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var newLineBytes = Encoding.GetBytes(Environment.NewLine);
+
+            var args = new SocketAsyncEventArgs();
+            args.SetBuffer(newLineBytes, 0, newLineBytes.Length);
+
+            EventHandler<SocketAsyncEventArgs> handler = null;
+            handler = (s, e) =>
+            {
+                args.Completed -= handler;
+                args.Dispose();
+
+                var ok = e.SocketError == SocketError.Success && e.BytesTransferred == newLineBytes.Length;
+                tcs.SetResult(ok);
+            };
+
+            args.Completed += handler;
+
+            if (!socket.SendAsync(args))
+            {
+                handler(socket, args);
+            }
+
+            return tcs.Task;
         }
 
         protected void OnDataArrived(Socket socket, byte[] data)
