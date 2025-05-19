@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Mtf.Network.Test
@@ -11,6 +12,7 @@ namespace Mtf.Network.Test
         [STAThread]
         static void Main()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
 #if NETCOREAPP

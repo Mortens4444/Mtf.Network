@@ -3,8 +3,10 @@ using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
+using Mtf.Network.Services;
 using Mtf.Network.Services.Crypting;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
@@ -658,7 +660,7 @@ namespace Mtf.Network.Test
         {
             vncServer = new VncServer(new ScreenInfoProvider());
             vncServer.Start();
-            
+
             lblVncServerStatus.Text = vncServer.ToString();
             tbVncClientIpAddress.Text = vncServer.CommandServerIpAddress;
             nudVncClientIpAddress.Value = vncServer.CommandServer.ListenerPortOfServer;
@@ -681,6 +683,25 @@ namespace Mtf.Network.Test
                 pbVncImages.Image = (Image)e.Frame.Clone();
                 e.Frame.Dispose();
             }));
+        }
+
+        private void BtnStartAppWithPsExec_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var output = new StringBuilder();
+
+                //var process = ProcessUtils.StartApplicationWithPsExec("calc");
+                var process = ProcessUtils.StartApplicationWithPsExec("systeminfo", "192.168.0.246", "Sup_dev_env", "pass", encoding: Encoding.GetEncoding(852),
+                    outputDataReceived: (_, e) => { output.AppendLine(e.Data); }, errorDataReceived: (_, e) => { output.AppendLine(e.Data); });
+
+                process.WaitForExit();
+                rtbOutput.Text = output.ToString();
+            }
+            catch (Exception ex)
+            {
+                ErrorBox.Show(ex);
+            }
         }
     }
 }

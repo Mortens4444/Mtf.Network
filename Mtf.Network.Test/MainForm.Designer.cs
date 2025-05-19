@@ -33,61 +33,62 @@ namespace Mtf.Network.Test
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            var listViewItem1 = new ListViewItem(new string[] { "$AV_AVG", "Folder", "" }, "folder");
-            var listViewItem2 = new ListViewItem(new string[] { "$Recycle.Bin", "Folder", "" }, "folder");
-            var listViewItem3 = new ListViewItem(new string[] { "Adjustment Program", "Folder", "" }, "folder");
-            var listViewItem4 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
-            var listViewItem5 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
-            var listViewItem6 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
-            var listViewItem7 = new ListViewItem(new string[] { "Databases", "Folder", "" }, "folder");
-            var listViewItem8 = new ListViewItem(new string[] { "Depends", "Folder", "" }, "folder");
-            var listViewItem9 = new ListViewItem(new string[] { "DesktopUpdater", "Folder", "" }, "folder");
-            var listViewItem10 = new ListViewItem(new string[] { "dicomdir", "Folder", "" }, "folder");
-            var listViewItem11 = new ListViewItem(new string[] { "Documents and Settings", "Folder", "" }, "folder");
-            var listViewItem12 = new ListViewItem(new string[] { "ECGo", "Folder", "" }, "folder");
-            var listViewItem13 = new ListViewItem(new string[] { "ffmpeg-master-latest-win64-gpl", "Folder", "" }, "folder");
-            var listViewItem14 = new ListViewItem(new string[] { "gcc", "Folder", "" }, "folder");
-            var listViewItem15 = new ListViewItem(new string[] { "gradle", "Folder", "" }, "folder");
-            var listViewItem16 = new ListViewItem(new string[] { "inetpub", "Folder", "" }, "folder");
-            var listViewItem17 = new ListViewItem(new string[] { "Install", "Folder", "" }, "folder");
-            var listViewItem18 = new ListViewItem(new string[] { "Intel", "Folder", "" }, "folder");
-            var listViewItem19 = new ListViewItem(new string[] { "logs", "Folder", "" }, "folder");
-            var listViewItem20 = new ListViewItem(new string[] { "Masm", "Folder", "" }, "folder");
-            var listViewItem21 = new ListViewItem(new string[] { "Microsoft Shared", "Folder", "" }, "folder");
-            var listViewItem22 = new ListViewItem(new string[] { "My Web Sites", "Folder", "" }, "folder");
-            var listViewItem23 = new ListViewItem(new string[] { "NuGetTest", "Folder", "" }, "folder");
-            var listViewItem24 = new ListViewItem(new string[] { "OneDriveTemp", "Folder", "" }, "folder");
-            var listViewItem25 = new ListViewItem(new string[] { "PE-bear", "Folder", "" }, "folder");
-            var listViewItem26 = new ListViewItem(new string[] { "PerfLogs", "Folder", "" }, "folder");
-            var listViewItem27 = new ListViewItem(new string[] { "PortableApps", "Folder", "" }, "folder");
-            var listViewItem28 = new ListViewItem(new string[] { "processing-4.0b4", "Folder", "" }, "folder");
-            var listViewItem29 = new ListViewItem(new string[] { "Program Files", "Folder", "" }, "folder");
-            var listViewItem30 = new ListViewItem(new string[] { "Program Files (x86)", "Folder", "" }, "folder");
-            var listViewItem31 = new ListViewItem(new string[] { "ProgramData", "Folder", "" }, "folder");
-            var listViewItem32 = new ListViewItem(new string[] { "PsExec", "Folder", "" }, "folder");
-            var listViewItem33 = new ListViewItem(new string[] { "python-3.12.4-embed-amd64", "Folder", "" }, "folder");
-            var listViewItem34 = new ListViewItem(new string[] { "Python27", "Folder", "" }, "folder");
-            var listViewItem35 = new ListViewItem(new string[] { "Recovery", "Folder", "" }, "folder");
-            var listViewItem36 = new ListViewItem(new string[] { "SQL2022", "Folder", "" }, "folder");
-            var listViewItem37 = new ListViewItem(new string[] { "System Volume Information", "Folder", "" }, "folder");
-            var listViewItem38 = new ListViewItem(new string[] { "Sziltech", "Folder", "" }, "folder");
-            var listViewItem39 = new ListViewItem(new string[] { "TeamCity", "Folder", "" }, "folder");
-            var listViewItem40 = new ListViewItem(new string[] { "temp", "Folder", "" }, "folder");
-            var listViewItem41 = new ListViewItem(new string[] { "Users", "Folder", "" }, "folder");
-            var listViewItem42 = new ListViewItem(new string[] { "VideoProjects", "Folder", "" }, "folder");
-            var listViewItem43 = new ListViewItem(new string[] { "Windows", "Folder", "" }, "folder");
-            var listViewItem44 = new ListViewItem(new string[] { "Work", "Folder", "" }, "folder");
-            var listViewItem45 = new ListViewItem(new string[] { "$WINRE_BACKUP_PARTITION.MARKER", ".MARKER File", "0 B" }, ".marker");
-            var listViewItem46 = new ListViewItem(new string[] { "AMTAG.BIN", ".BIN File", "1 kB" }, ".bin");
-            var listViewItem47 = new ListViewItem(new string[] { "appverifUI.dll", ".DLL File", "109,1 kB" }, ".dll");
-            var listViewItem48 = new ListViewItem(new string[] { "bootTel.dat", ".DAT File", "112 B" }, ".dat");
-            var listViewItem49 = new ListViewItem(new string[] { "DumpStack.log", ".LOG File", "12 kB" }, ".log");
-            var listViewItem50 = new ListViewItem(new string[] { "DumpStack.log.tmp", ".TMP File", "12 kB" }, ".tmp");
-            var listViewItem51 = new ListViewItem(new string[] { "hiberfil.sys", ".SYS File", "6,3 GB" }, ".sys");
-            var listViewItem52 = new ListViewItem(new string[] { "Not recognized checkmate.png", ".PNG File", "66,1 kB" }, ".png");
-            var listViewItem53 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "34,3 GB" }, ".sys");
-            var listViewItem54 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "16 MB" }, ".sys");
-            var listViewItem55 = new ListViewItem(new string[] { "vfcompat.dll", ".DLL File", "65,7 kB" }, ".dll");
+            var listViewItem57 = new ListViewItem(new string[] { "$AV_AVG", "Folder", "" }, "folder");
+            var listViewItem58 = new ListViewItem(new string[] { "$Recycle.Bin", "Folder", "" }, "folder");
+            var listViewItem59 = new ListViewItem(new string[] { "$WinREAgent", "Folder", "" }, "folder");
+            var listViewItem60 = new ListViewItem(new string[] { "Adjustment Program", "Folder", "" }, "folder");
+            var listViewItem61 = new ListViewItem(new string[] { "avi", "Folder", "" }, "folder");
+            var listViewItem62 = new ListViewItem(new string[] { "BigFishCache", "Folder", "" }, "folder");
+            var listViewItem63 = new ListViewItem(new string[] { "Code Browser", "Folder", "" }, "folder");
+            var listViewItem64 = new ListViewItem(new string[] { "Databases", "Folder", "" }, "folder");
+            var listViewItem65 = new ListViewItem(new string[] { "Depends", "Folder", "" }, "folder");
+            var listViewItem66 = new ListViewItem(new string[] { "DesktopUpdater", "Folder", "" }, "folder");
+            var listViewItem67 = new ListViewItem(new string[] { "dicomdir", "Folder", "" }, "folder");
+            var listViewItem68 = new ListViewItem(new string[] { "Documents and Settings", "Folder", "" }, "folder");
+            var listViewItem69 = new ListViewItem(new string[] { "ECGo", "Folder", "" }, "folder");
+            var listViewItem70 = new ListViewItem(new string[] { "ffmpeg-master-latest-win64-gpl", "Folder", "" }, "folder");
+            var listViewItem71 = new ListViewItem(new string[] { "gcc", "Folder", "" }, "folder");
+            var listViewItem72 = new ListViewItem(new string[] { "gradle", "Folder", "" }, "folder");
+            var listViewItem73 = new ListViewItem(new string[] { "inetpub", "Folder", "" }, "folder");
+            var listViewItem74 = new ListViewItem(new string[] { "Install", "Folder", "" }, "folder");
+            var listViewItem75 = new ListViewItem(new string[] { "Intel", "Folder", "" }, "folder");
+            var listViewItem76 = new ListViewItem(new string[] { "logs", "Folder", "" }, "folder");
+            var listViewItem77 = new ListViewItem(new string[] { "Masm", "Folder", "" }, "folder");
+            var listViewItem78 = new ListViewItem(new string[] { "Microsoft Shared", "Folder", "" }, "folder");
+            var listViewItem79 = new ListViewItem(new string[] { "My Web Sites", "Folder", "" }, "folder");
+            var listViewItem80 = new ListViewItem(new string[] { "NuGetTest", "Folder", "" }, "folder");
+            var listViewItem81 = new ListViewItem(new string[] { "OneDriveTemp", "Folder", "" }, "folder");
+            var listViewItem82 = new ListViewItem(new string[] { "PE-bear", "Folder", "" }, "folder");
+            var listViewItem83 = new ListViewItem(new string[] { "PerfLogs", "Folder", "" }, "folder");
+            var listViewItem84 = new ListViewItem(new string[] { "PortableApps", "Folder", "" }, "folder");
+            var listViewItem85 = new ListViewItem(new string[] { "processing-4.0b4", "Folder", "" }, "folder");
+            var listViewItem86 = new ListViewItem(new string[] { "Program Files", "Folder", "" }, "folder");
+            var listViewItem87 = new ListViewItem(new string[] { "Program Files (x86)", "Folder", "" }, "folder");
+            var listViewItem88 = new ListViewItem(new string[] { "ProgramData", "Folder", "" }, "folder");
+            var listViewItem89 = new ListViewItem(new string[] { "PsExec", "Folder", "" }, "folder");
+            var listViewItem90 = new ListViewItem(new string[] { "python-3.12.4-embed-amd64", "Folder", "" }, "folder");
+            var listViewItem91 = new ListViewItem(new string[] { "Python27", "Folder", "" }, "folder");
+            var listViewItem92 = new ListViewItem(new string[] { "Recovery", "Folder", "" }, "folder");
+            var listViewItem93 = new ListViewItem(new string[] { "SQL2022", "Folder", "" }, "folder");
+            var listViewItem94 = new ListViewItem(new string[] { "System Volume Information", "Folder", "" }, "folder");
+            var listViewItem95 = new ListViewItem(new string[] { "Sziltech", "Folder", "" }, "folder");
+            var listViewItem96 = new ListViewItem(new string[] { "TeamCity", "Folder", "" }, "folder");
+            var listViewItem97 = new ListViewItem(new string[] { "temp", "Folder", "" }, "folder");
+            var listViewItem98 = new ListViewItem(new string[] { "Users", "Folder", "" }, "folder");
+            var listViewItem99 = new ListViewItem(new string[] { "VideoProjects", "Folder", "" }, "folder");
+            var listViewItem100 = new ListViewItem(new string[] { "Windows", "Folder", "" }, "folder");
+            var listViewItem101 = new ListViewItem(new string[] { "Work", "Folder", "" }, "folder");
+            var listViewItem102 = new ListViewItem(new string[] { "$WINRE_BACKUP_PARTITION.MARKER", ".MARKER File", "0 B" }, ".marker");
+            var listViewItem103 = new ListViewItem(new string[] { "AMTAG.BIN", ".BIN File", "1 kB" }, ".bin");
+            var listViewItem104 = new ListViewItem(new string[] { "appverifUI.dll", ".DLL File", "109,1 kB" }, ".dll");
+            var listViewItem105 = new ListViewItem(new string[] { "bootTel.dat", ".DAT File", "112 B" }, ".dat");
+            var listViewItem106 = new ListViewItem(new string[] { "DumpStack.log", ".LOG File", "12 kB" }, ".log");
+            var listViewItem107 = new ListViewItem(new string[] { "DumpStack.log.tmp", ".TMP File", "12 kB" }, ".tmp");
+            var listViewItem108 = new ListViewItem(new string[] { "hiberfil.sys", ".SYS File", "6,3 GB" }, ".sys");
+            var listViewItem109 = new ListViewItem(new string[] { "Not recognized checkmate.png", ".PNG File", "66,1 kB" }, ".png");
+            var listViewItem110 = new ListViewItem(new string[] { "pagefile.sys", ".SYS File", "39,7 GB" }, ".sys");
+            var listViewItem111 = new ListViewItem(new string[] { "swapfile.sys", ".SYS File", "272 MB" }, ".sys");
+            var listViewItem112 = new ListViewItem(new string[] { "vfcompat.dll", ".DLL File", "65,7 kB" }, ".dll");
             tabControl = new TabControl();
             tabPage1 = new TabPage();
             panel1 = new Panel();
@@ -104,6 +105,7 @@ namespace Mtf.Network.Test
             nudServerListeningPort = new NumericUpDown();
             tabPage2 = new TabPage();
             panel2 = new Panel();
+            chkClientUseEnrypt2 = new CheckBox();
             chkClientUseEnrypt = new CheckBox();
             btnSendToServer2 = new Button();
             label24 = new Label();
@@ -202,8 +204,9 @@ namespace Mtf.Network.Test
             lblVncServerStatus = new Label();
             btnStartVncServer = new Button();
             tabPage12 = new TabPage();
+            rtbOutput = new RichTextBox();
+            btnStartAppWithPsExec = new Button();
             btnSunellCameraTest = new Button();
-            chkClientUseEnrypt2 = new CheckBox();
             tabControl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -432,6 +435,16 @@ namespace Mtf.Network.Test
             panel2.Name = "panel2";
             panel2.Size = new Size(817, 374);
             panel2.TabIndex = 0;
+            // 
+            // chkClientUseEnrypt2
+            // 
+            chkClientUseEnrypt2.AutoSize = true;
+            chkClientUseEnrypt2.Location = new Point(584, 31);
+            chkClientUseEnrypt2.Name = "chkClientUseEnrypt2";
+            chkClientUseEnrypt2.Size = new Size(115, 19);
+            chkClientUseEnrypt2.TabIndex = 19;
+            chkClientUseEnrypt2.Text = "Client use enrypt";
+            chkClientUseEnrypt2.UseVisualStyleBackColor = true;
             // 
             // chkClientUseEnrypt
             // 
@@ -707,7 +720,7 @@ namespace Mtf.Network.Test
             // 
             fileBrowserView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             fileBrowserView1.BackColor = Color.Silver;
-            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem1, listViewItem2, listViewItem3, listViewItem4, listViewItem5, listViewItem6, listViewItem7, listViewItem8, listViewItem9, listViewItem10, listViewItem11, listViewItem12, listViewItem13, listViewItem14, listViewItem15, listViewItem16, listViewItem17, listViewItem18, listViewItem19, listViewItem20, listViewItem21, listViewItem22, listViewItem23, listViewItem24, listViewItem25, listViewItem26, listViewItem27, listViewItem28, listViewItem29, listViewItem30, listViewItem31, listViewItem32, listViewItem33, listViewItem34, listViewItem35, listViewItem36, listViewItem37, listViewItem38, listViewItem39, listViewItem40, listViewItem41, listViewItem42, listViewItem43, listViewItem44, listViewItem45, listViewItem46, listViewItem47, listViewItem48, listViewItem49, listViewItem50, listViewItem51, listViewItem52, listViewItem53, listViewItem54, listViewItem55 });
+            fileBrowserView1.Items.AddRange(new ListViewItem[] { listViewItem57, listViewItem58, listViewItem59, listViewItem60, listViewItem61, listViewItem62, listViewItem63, listViewItem64, listViewItem65, listViewItem66, listViewItem67, listViewItem68, listViewItem69, listViewItem70, listViewItem71, listViewItem72, listViewItem73, listViewItem74, listViewItem75, listViewItem76, listViewItem77, listViewItem78, listViewItem79, listViewItem80, listViewItem81, listViewItem82, listViewItem83, listViewItem84, listViewItem85, listViewItem86, listViewItem87, listViewItem88, listViewItem89, listViewItem90, listViewItem91, listViewItem92, listViewItem93, listViewItem94, listViewItem95, listViewItem96, listViewItem97, listViewItem98, listViewItem99, listViewItem100, listViewItem101, listViewItem102, listViewItem103, listViewItem104, listViewItem105, listViewItem106, listViewItem107, listViewItem108, listViewItem109, listViewItem110, listViewItem111, listViewItem112 });
             fileBrowserView1.Location = new Point(8, 92);
             fileBrowserView1.Name = "fileBrowserView1";
             fileBrowserView1.Size = new Size(534, 280);
@@ -807,12 +820,27 @@ namespace Mtf.Network.Test
             // 
             rtbTelnetCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             rtbTelnetCommunication.BackColor = Color.Silver;
-            rtbTelnetCommunication.DisplayAnsiColors = true;
+            rtbTelnetCommunication.BlackColor = Color.Black;
+            rtbTelnetCommunication.BlueColor = Color.Blue;
+            rtbTelnetCommunication.BrightBlackColor = Color.DarkGray;
+            rtbTelnetCommunication.BrightBlueColor = Color.LightBlue;
+            rtbTelnetCommunication.BrightCyanColor = Color.LightCyan;
+            rtbTelnetCommunication.BrightGreenColor = Color.LightGreen;
+            rtbTelnetCommunication.BrightPurpleColor = Color.Plum;
+            rtbTelnetCommunication.BrightRedColor = Color.LightCoral;
+            rtbTelnetCommunication.BrightWhiteColor = Color.Wheat;
+            rtbTelnetCommunication.BrightYellowColor = Color.LightYellow;
+            rtbTelnetCommunication.CyanColor = Color.Cyan;
+            rtbTelnetCommunication.GreenColor = Color.Green;
             rtbTelnetCommunication.Location = new Point(8, 85);
             rtbTelnetCommunication.Name = "rtbTelnetCommunication";
+            rtbTelnetCommunication.PurpleColor = Color.Purple;
+            rtbTelnetCommunication.RedColor = Color.Red;
             rtbTelnetCommunication.Size = new Size(807, 292);
             rtbTelnetCommunication.TabIndex = 20;
             rtbTelnetCommunication.Text = "";
+            rtbTelnetCommunication.WhiteColor = Color.White;
+            rtbTelnetCommunication.YellowColor = Color.Yellow;
             // 
             // btnSendToTelnetServer
             // 
@@ -919,12 +947,27 @@ namespace Mtf.Network.Test
             // 
             rtbSmtpCommunication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             rtbSmtpCommunication.BackColor = Color.Silver;
-            rtbSmtpCommunication.DisplayAnsiColors = true;
+            rtbSmtpCommunication.BlackColor = Color.Black;
+            rtbSmtpCommunication.BlueColor = Color.Blue;
+            rtbSmtpCommunication.BrightBlackColor = Color.DarkGray;
+            rtbSmtpCommunication.BrightBlueColor = Color.LightBlue;
+            rtbSmtpCommunication.BrightCyanColor = Color.LightCyan;
+            rtbSmtpCommunication.BrightGreenColor = Color.LightGreen;
+            rtbSmtpCommunication.BrightPurpleColor = Color.Plum;
+            rtbSmtpCommunication.BrightRedColor = Color.LightCoral;
+            rtbSmtpCommunication.BrightWhiteColor = Color.Wheat;
+            rtbSmtpCommunication.BrightYellowColor = Color.LightYellow;
+            rtbSmtpCommunication.CyanColor = Color.Cyan;
+            rtbSmtpCommunication.GreenColor = Color.Green;
             rtbSmtpCommunication.Location = new Point(8, 127);
             rtbSmtpCommunication.Name = "rtbSmtpCommunication";
+            rtbSmtpCommunication.PurpleColor = Color.Purple;
+            rtbSmtpCommunication.RedColor = Color.Red;
             rtbSmtpCommunication.Size = new Size(807, 247);
             rtbSmtpCommunication.TabIndex = 28;
             rtbSmtpCommunication.Text = "";
+            rtbSmtpCommunication.WhiteColor = Color.White;
+            rtbSmtpCommunication.YellowColor = Color.Yellow;
             // 
             // tbSendToSmtpServer
             // 
@@ -1023,12 +1066,27 @@ namespace Mtf.Network.Test
             // 
             rtbPop3Communication.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             rtbPop3Communication.BackColor = Color.Silver;
-            rtbPop3Communication.DisplayAnsiColors = true;
+            rtbPop3Communication.BlackColor = Color.Black;
+            rtbPop3Communication.BlueColor = Color.Blue;
+            rtbPop3Communication.BrightBlackColor = Color.DarkGray;
+            rtbPop3Communication.BrightBlueColor = Color.LightBlue;
+            rtbPop3Communication.BrightCyanColor = Color.LightCyan;
+            rtbPop3Communication.BrightGreenColor = Color.LightGreen;
+            rtbPop3Communication.BrightPurpleColor = Color.Plum;
+            rtbPop3Communication.BrightRedColor = Color.LightCoral;
+            rtbPop3Communication.BrightWhiteColor = Color.Wheat;
+            rtbPop3Communication.BrightYellowColor = Color.LightYellow;
+            rtbPop3Communication.CyanColor = Color.Cyan;
+            rtbPop3Communication.GreenColor = Color.Green;
             rtbPop3Communication.Location = new Point(8, 127);
             rtbPop3Communication.Name = "rtbPop3Communication";
+            rtbPop3Communication.PurpleColor = Color.Purple;
+            rtbPop3Communication.RedColor = Color.Red;
             rtbPop3Communication.Size = new Size(807, 247);
             rtbPop3Communication.TabIndex = 37;
             rtbPop3Communication.Text = "";
+            rtbPop3Communication.WhiteColor = Color.White;
+            rtbPop3Communication.YellowColor = Color.Yellow;
             // 
             // btnSendToPop3Server
             // 
@@ -1411,6 +1469,8 @@ namespace Mtf.Network.Test
             // tabPage12
             // 
             tabPage12.BackColor = Color.Gray;
+            tabPage12.Controls.Add(rtbOutput);
+            tabPage12.Controls.Add(btnStartAppWithPsExec);
             tabPage12.Controls.Add(btnSunellCameraTest);
             tabPage12.Location = new Point(4, 24);
             tabPage12.Name = "tabPage12";
@@ -1418,6 +1478,25 @@ namespace Mtf.Network.Test
             tabPage12.Size = new Size(823, 380);
             tabPage12.TabIndex = 9;
             tabPage12.Text = "Test examples";
+            // 
+            // rtbOutput
+            // 
+            rtbOutput.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbOutput.Location = new Point(389, 7);
+            rtbOutput.Name = "rtbOutput";
+            rtbOutput.Size = new Size(426, 367);
+            rtbOutput.TabIndex = 2;
+            rtbOutput.Text = "";
+            // 
+            // btnStartAppWithPsExec
+            // 
+            btnStartAppWithPsExec.Location = new Point(8, 35);
+            btnStartAppWithPsExec.Name = "btnStartAppWithPsExec";
+            btnStartAppWithPsExec.Size = new Size(126, 23);
+            btnStartAppWithPsExec.TabIndex = 1;
+            btnStartAppWithPsExec.Text = "Start app (PsExec)";
+            btnStartAppWithPsExec.UseVisualStyleBackColor = true;
+            btnStartAppWithPsExec.Click += BtnStartAppWithPsExec_Click;
             // 
             // btnSunellCameraTest
             // 
@@ -1428,16 +1507,6 @@ namespace Mtf.Network.Test
             btnSunellCameraTest.Text = "Sunell camera test";
             btnSunellCameraTest.UseVisualStyleBackColor = true;
             btnSunellCameraTest.Click += BtnSunellCameraTest_Click;
-            // 
-            // chkClientUseEnrypt2
-            // 
-            chkClientUseEnrypt2.AutoSize = true;
-            chkClientUseEnrypt2.Location = new Point(584, 31);
-            chkClientUseEnrypt2.Name = "chkClientUseEnrypt2";
-            chkClientUseEnrypt2.Size = new Size(115, 19);
-            chkClientUseEnrypt2.TabIndex = 19;
-            chkClientUseEnrypt2.Text = "Client use enrypt";
-            chkClientUseEnrypt2.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -1608,5 +1677,7 @@ namespace Mtf.Network.Test
         private CheckBox chkUseEncrypt;
         private CheckBox chkClientUseEnrypt;
         private CheckBox chkClientUseEnrypt2;
+        private Button btnStartAppWithPsExec;
+        private RichTextBox rtbOutput;
     }
 }

@@ -17,8 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mtf.Controls" Version="1.0.100" />
-    <PackageReference Include="Mtf.MessageBoxes" Version="5.0.5" />
+    <PackageReference Include="Mtf.Controls" Version="1.1.13" />
+    <PackageReference Include="Mtf.MessageBoxes" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
