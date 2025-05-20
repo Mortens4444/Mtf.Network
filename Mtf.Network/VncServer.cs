@@ -1,6 +1,6 @@
 ﻿using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using Mtf.Network.Extensions;
+using Mtf.Extensions;
 using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
 using System;
@@ -36,13 +36,13 @@ namespace Mtf.Network
 
         public Server CommandServer => commandServer;
 
-        public string CommandServerIpAddress => CommandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault(ip => ip.StartsWith("192.")) ?? CommandServer?.Socket?.GetLocalIPAddresses().FirstOrDefault();
+        public string CommandServerIpAddress => CommandServer?.Socket?.GetLocalIPAddresses(NetUtils.GetLocalIPAddresses).FirstOrDefault(ip => ip.StartsWith("192.")) ?? CommandServer?.Socket?.GetLocalIPAddresses(NetUtils.GetLocalIPAddresses).FirstOrDefault();
         
-        public string ImageCaptureServerIpAddress => imageCaptureServer?.Server?.Socket?.GetLocalIPAddresses().FirstOrDefault();
+        public string ImageCaptureServerIpAddress => imageCaptureServer?.Server?.Socket?.GetLocalIPAddresses(NetUtils.GetLocalIPAddresses).FirstOrDefault();
 
-        public string ImageCaptureServerInfo => ImageCaptureServer?.Server?.Socket?.GetLocalIPAddressesInfo();
+        public string ImageCaptureServerInfo => ImageCaptureServer?.Server?.Socket?.GetLocalIPAddressesInfo(NetUtils.GetLocalIPAddresses);
 
-        public string CommandServerInfo => CommandServer?.Socket?.GetLocalIPAddressesInfo();
+        public string CommandServerInfo => CommandServer?.Socket?.GetLocalIPAddressesInfo(NetUtils.GetLocalIPAddresses);
 
         public void Start()
         {

@@ -1,8 +1,7 @@
-﻿using Mtf.Network.EventArg;
-using Mtf.Network.Extensions;
+﻿using Mtf.Extensions;
+using Mtf.Network.EventArg;
 using Mtf.Network.Models;
 using System;
-using System.IO.Pipes;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;

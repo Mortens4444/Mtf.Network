@@ -1,5 +1,6 @@
-﻿using Mtf.Network.Extensions;
+﻿using Mtf.Extensions;
 using Mtf.Network.Interfaces;
+using Mtf.Network.Services;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -35,7 +36,7 @@ namespace Mtf.Network
             if (!Socket.Connected)
             {
                 CancellationTokenSource = new CancellationTokenSource();
-                Socket.Connect(ServerHostnameOrIPAddress, ListenerPortOfServer, Timeout);
+                Socket.Connect(ServerHostnameOrIPAddress, ListenerPortOfServer, Timeout, NetUtils.GetLocalIPAddresses);
                 receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);
             }
         }

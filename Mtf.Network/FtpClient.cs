@@ -1,6 +1,6 @@
-﻿using Mtf.Network.Enums;
+﻿using Mtf.Extensions;
+using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using Mtf.Network.Extensions;
 using Mtf.Network.Services;
 using System;
 using System.Net;

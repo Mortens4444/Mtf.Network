@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using Mtf.Extensions;
 using Mtf.Network.EventArg;
-using Mtf.Network.Extensions;
 using Mtf.Network.Interfaces;
+using Mtf.Network.Services;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -322,7 +323,7 @@ namespace Mtf.Network
             var result = $"{Socket.LocalEndPoint}";
             if (result.StartsWith(SocketExtensions.IpAny, StringComparison.Ordinal))
             {
-                result = result.Replace(SocketExtensions.IpAnyWithoutColon, Socket.GetLocalIPAddressesInfo("|"));
+                result = result.Replace(SocketExtensions.IpAnyWithoutColon, Socket.GetLocalIPAddressesInfo(NetUtils.GetLocalIPAddresses, "|"));
             }
             return result;
         }
