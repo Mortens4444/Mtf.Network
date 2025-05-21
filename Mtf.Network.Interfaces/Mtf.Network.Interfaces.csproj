@@ -20,21 +20,36 @@
     <EmbedAllSources>true</EmbedAllSources>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <DebugType>portable</DebugType>
+  
+  <PropertyGroup>
+    <Version>1.0.5</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-    <DebugType>portable</DebugType>
+  <PropertyGroup>
+    <PackageId>Mtf.Network.Interfaces</PackageId>
+    <Authors>Mortens</Authors>
+    <Company>Mortens</Company>
+    <Description>Interfaces used by Mtf.Network.</Description>
+    <PackageReadmeFile>.\ReadMe.md</PackageReadmeFile>
+    <PackageLicenseFile>.\LICENSE.txt</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Mortens4444/Mtf.Network.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ICipher IImageSource IProcessResultParser IScreenInfoProvider Mortens</PackageTags>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\ReadMe.md" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Mtf.Extensions" Version="1.0.6" />
+    <PackageReference Include="Mtf.Network.Interfaces" Version="1.0.3" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+  </ItemGroup>
 
 </Project>

@@ -20,46 +20,44 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EmbedAllSources>true</EmbedAllSources>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <DebugType>portable</DebugType>
+  <PropertyGroup>
+    <Version>2.0.8</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-    <DebugType>portable</DebugType>
+  <PropertyGroup>
+    <PackageId>Mtf.Network</PackageId>
+    <Authors>Mortens</Authors>
+    <Company>Mortens</Company>
+    <Description>TCP-based clients are designed to help understand the basics of network communication. These clients do not encrypt the data they send. I recommend not using them in commercial applications.</Description>
+    <PackageReadmeFile>.\ReadMe.md</PackageReadmeFile>
+    <PackageLicenseFile>.\LICENSE.txt</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Mortens4444/Mtf.Network.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>FtpClient HttpClient Pop3Client SmtpClient PipeClient SnmpClient SoapClient TelnetClient UpnpClient WakeOnLAN VncClient VncServer ImageCaptureServer VideoCaptureClient Mortens</PackageTags>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <Target Name="SetFileVersionFromNuspec" BeforeTargets="BeforeBuild">
-    <XmlPeek XmlInputPath="../.nuspec" Query="//*[local-name()='version']/text()">
-      <Output TaskParameter="Result" PropertyName="FileVersion" />
-    </XmlPeek>
-  </Target>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.2" />
+  <ItemGroup>
+    <None Include="..\ReadMe.md" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mtf.Extensions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Mtf.Extensions" Version="1.0.6" />
     <PackageReference Include="Mtf.Network.Interfaces" Version="1.0.3" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
   </ItemGroup>

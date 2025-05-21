@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "ProjectName=Mtf.Network.Interfaces"
+set "ProjectName=Mtf.Network"
 set "TargetDir=C:\NuGetTest"
 
 for %%F in ("%TargetDir%\%ProjectName%.*.nupkg") do (
