@@ -109,14 +109,18 @@ namespace Mtf.Network
 
             try
             {
-                if (!await SendAsync(Socket, bytes))
+                if (!await SendAsync(Socket, bytes).ConfigureAwait(false))
+                {
                     return false;
+                }
 
                 if (appendNewLine)
                 {
                     var newLineBytes = Encoding.GetBytes(Environment.NewLine);
-                    if (!await SendAsync(Socket, newLineBytes))
+                    if (!await SendAsync(Socket, newLineBytes).ConfigureAwait(false))
+                    {
                         return false;
+                    }
                 }
 
                 return true;
@@ -127,7 +131,7 @@ namespace Mtf.Network
             }
         }
 
-        private Task<bool> SendAsync(Socket socket, byte[] data)
+        private static Task<bool> SendAsync(Socket socket, byte[] data)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -137,24 +141,26 @@ namespace Mtf.Network
                 return tcs.Task;
             }
 
-            var args = new SocketAsyncEventArgs();
-            args.SetBuffer(data, 0, data.Length);
-
-            EventHandler<SocketAsyncEventArgs> handler = null;
-            handler = (s, e) =>
+            using (var args = new SocketAsyncEventArgs())
             {
-                args.Completed -= handler;
-                args.Dispose();
+                args.SetBuffer(data, 0, data.Length);
 
-                var success = e.SocketError == SocketError.Success && e.BytesTransferred == data.Length;
-                tcs.SetResult(success);
-            };
+                EventHandler<SocketAsyncEventArgs> handler = null;
+                handler = (s, e) =>
+                {
+                    args.Completed -= handler;
+                    args.Dispose();
 
-            args.Completed += handler;
+                    var success = e.SocketError == SocketError.Success && e.BytesTransferred == data.Length;
+                    tcs.SetResult(success);
+                };
 
-            if (!socket.SendAsync(args))
-            {
-                handler(socket, args);
+                args.Completed += handler;
+
+                if (!socket.SendAsync(args))
+                {
+                    handler(socket, args);
+                }
             }
 
             return tcs.Task;
@@ -167,7 +173,7 @@ namespace Mtf.Network
 
         public Task<bool> SendAsync(Socket socket, string message, bool appendNewLine = false)
         {
-            return SendAsync(socket, ConvertMessageToData(message, appendNewLine));
+            return Communicator.SendAsync(socket, ConvertMessageToData(message, appendNewLine));
         }
 
         public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false)
@@ -199,40 +205,42 @@ namespace Mtf.Network
 
             bytes = Transform(bytes, true);
 
-            var args = new SocketAsyncEventArgs();
-            args.SetBuffer(bytes, 0, bytes.Length);
-
-            EventHandler<SocketAsyncEventArgs> handler = null;
-            handler = (s, e) =>
+            using (var args = new SocketAsyncEventArgs())
             {
-                args.Completed -= handler;
-                args.Dispose();
+                args.SetBuffer(bytes, 0, bytes.Length);
 
-                if (e.SocketError == SocketError.Success && e.BytesTransferred == bytes.Length)
+                EventHandler<SocketAsyncEventArgs> handler = null;
+                handler = (s, e) =>
                 {
-                    if (appendNewLine)
+                    args.Completed -= handler;
+                    args.Dispose();
+
+                    if (e.SocketError == SocketError.Success && e.BytesTransferred == bytes.Length)
                     {
-                        SendNewLine(socket).ContinueWith(t =>
+                        if (appendNewLine)
                         {
-                            tcs.SetResult(t.Result);
-                        }, TaskScheduler.Default);
+                            SendNewLine(socket).ContinueWith(t =>
+                            {
+                                tcs.SetResult(t.Result);
+                            }, TaskScheduler.Default);
+                        }
+                        else
+                        {
+                            tcs.SetResult(true);
+                        }
                     }
                     else
                     {
-                        tcs.SetResult(true);
+                        tcs.SetResult(false);
                     }
-                }
-                else
+                };
+
+                args.Completed += handler;
+
+                if (!socket.SendAsync(args))
                 {
-                    tcs.SetResult(false);
+                    handler(socket, args);
                 }
-            };
-
-            args.Completed += handler;
-
-            if (!socket.SendAsync(args))
-            {
-                handler(socket, args);
             }
 
             return tcs.Task;
@@ -243,24 +251,26 @@ namespace Mtf.Network
             var tcs = new TaskCompletionSource<bool>();
             var newLineBytes = Encoding.GetBytes(Environment.NewLine);
 
-            var args = new SocketAsyncEventArgs();
-            args.SetBuffer(newLineBytes, 0, newLineBytes.Length);
-
-            EventHandler<SocketAsyncEventArgs> handler = null;
-            handler = (s, e) =>
+            using (var args = new SocketAsyncEventArgs())
             {
-                args.Completed -= handler;
-                args.Dispose();
+                args.SetBuffer(newLineBytes, 0, newLineBytes.Length);
 
-                var ok = e.SocketError == SocketError.Success && e.BytesTransferred == newLineBytes.Length;
-                tcs.SetResult(ok);
-            };
+                EventHandler<SocketAsyncEventArgs> handler = null;
+                handler = (s, e) =>
+                {
+                    args.Completed -= handler;
+                    args.Dispose();
 
-            args.Completed += handler;
+                    var ok = e.SocketError == SocketError.Success && e.BytesTransferred == newLineBytes.Length;
+                    tcs.SetResult(ok);
+                };
 
-            if (!socket.SendAsync(args))
-            {
-                handler(socket, args);
+                args.Completed += handler;
+
+                if (!socket.SendAsync(args))
+                {
+                    handler(socket, args);
+                }
             }
 
             return tcs.Task;
@@ -332,9 +342,19 @@ namespace Mtf.Network
         {
             if (ciphers != null)
             {
-                foreach (var cipher in ciphers)
+                if (encrypt)
                 {
-                    data = encrypt ? cipher.Encrypt(data) : cipher.Decrypt(data);
+                    for (int i = 0; i < ciphers.Length; i++)
+                    {
+                        data = ciphers[i].Encrypt(data);
+                    }
+                }
+                else
+                {
+                    for (int i = ciphers.Length - 1; i >= 0; i--)
+                    {
+                        data = ciphers[i].Decrypt(data);
+                    }
                 }
             }
             return data;

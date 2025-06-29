@@ -1,5 +1,6 @@
 ﻿using Mtf.Network.Interfaces;
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -18,14 +19,55 @@ namespace Mtf.Network.Services.Crypting
         private bool disposed;
 
         /// <summary>
-        /// Initializes a new instance of the RsaCipher class using provided RSA parameters.
-        /// Handles both public-only (for encryption) and public/private keys.
+        /// Initializes a new instance of the RsaCipher class using keys from a file.
+        /// Supports XML formatted files.
         /// </summary>
-        /// <param name="parameters">The RSA parameters (containing Modulus, Exponent, and optionally D, P, Q etc.).</param>
-        /// <param name="useOaepPadding">True to use OAEP padding (recommended, SHA256 hash), false to use PKCS#1 v1.5 padding.</param>
+        /// <param name="keyFilePath">Path to the file containing the key.</param>
+        /// <param name="useOaepPadding">Use OAEP (SHA256) padding if true, otherwise use PKCS#1 v1.5.</param>
+        public RsaCipher(string keyFilePath, bool useOaepPadding = true)
+            : this(LoadRsaParametersFromFile(keyFilePath), useOaepPadding)
+        {
+        }
+
+        /// <summary>
+        /// Loads RSAParameters from a file (supports XML).
+        /// </summary>
+        /// <param name="filePath">Path to the key file.</param>
+        /// <returns>RSAParameters loaded from the file.</returns>
+        public static RSAParameters LoadRsaParametersFromFile(string filePath)
+        {
+            var keyText = File.ReadAllText(filePath);
+
+            if (keyText.TrimStart().StartsWith("<"))
+            {
+                using (var rsa = RSA.Create())
+                {
+                    rsa.FromXmlString(keyText);
+                    return rsa.ExportParameters(keyText.Contains("<D>")); // contains private key?
+                }
+            }
+            //else if (keyText.Contains("BEGIN RSA PRIVATE KEY") || keyText.Contains("BEGIN PUBLIC KEY"))
+            //{
+            //    using (var rsa = RSA.Create())
+            //    {
+            //        rsa.ImportFromPem(keyText.ToCharArray());
+            //        return rsa.ExportParameters(keyText.Contains("PRIVATE"));
+            //    }
+            //}
+            else
+            {
+                throw new InvalidOperationException("Unsupported key format. Supported: XML or PEM.");
+            }
+        }
+        
+        /// <summary>
+                 /// Initializes a new instance of the RsaCipher class using provided RSA parameters.
+                 /// Handles both public-only (for encryption) and public/private keys.
+                 /// </summary>
+                 /// <param name="parameters">The RSA parameters (containing Modulus, Exponent, and optionally D, P, Q etc.).</param>
+                 /// <param name="useOaepPadding">True to use OAEP padding (recommended, SHA256 hash), false to use PKCS#1 v1.5 padding.</param>
         public RsaCipher(RSAParameters parameters, bool useOaepPadding = true)
         {
-            // Ellenőrizzük az alapvető szükséges paramétereket
             if (parameters.Modulus == null || parameters.Exponent == null)
             {
                 throw new ArgumentException("RSA parameters must include at least Modulus and Exponent.", nameof(parameters));
@@ -39,15 +81,12 @@ namespace Mtf.Network.Services.Crypting
             }
             catch (CryptographicException ex)
             {
-                rsaInstance.Dispose(); // Takarítás hiba esetén
+                rsaInstance.Dispose();
                 throw new ArgumentException("Invalid RSA parameters provided.", nameof(parameters), ex);
             }
 
-            // Eldöntjük, tudunk-e dekódolni a privát kulcs jelenléte alapján
-            // A 'D' a privát exponens, ami szükséges.
-            canDecrypt = parameters.D != null;
 
-            // Padding beállítása
+            canDecrypt = parameters.D != null;
             padding = useOaepPadding ? RSAEncryptionPadding.OaepSHA256 : RSAEncryptionPadding.Pkcs1;
         }
 
@@ -62,20 +101,22 @@ namespace Mtf.Network.Services.Crypting
         /// <exception cref="CryptographicException">Thrown if encryption fails (e.g., message too long for key size and padding).</exception>
         public byte[] Encrypt(byte[] plainBytes)
         {
-            if (plainBytes == null) throw new ArgumentNullException(nameof(plainBytes));
-            if (rsaInstance == null) throw new ObjectDisposedException(nameof(RsaCipher));
+            if (plainBytes == null)
+            {
+                throw new ArgumentNullException(nameof(plainBytes));
+            }
+
+            if (rsaInstance == null)
+            {
+                throw new ObjectDisposedException(nameof(RsaCipher));
+            }
 
             try
             {
-                // Az Encrypt metódus kezeli a paddinget és a blokkokra bontást
                 return rsaInstance.Encrypt(plainBytes, padding);
             }
             catch (CryptographicException ex)
             {
-                // További kontextust adhatunk a hibához
-                // Pl. ellenőrizhetjük, hogy az adat mérete nem túl nagy-e a kulcshoz képest
-                // int maxDataLength = CalculateMaxDataLength();
-                // if (plainBytes.Length > maxDataLength) ...
                 throw new CryptographicException($"Encryption failed. Ensure data length ({plainBytes.Length} bytes) is appropriate for the key size ({rsaInstance.KeySize} bits) and padding '{padding.Mode}'. Inner exception: {ex.Message}", ex);
             }
         }
@@ -91,8 +132,16 @@ namespace Mtf.Network.Services.Crypting
         /// <exception cref="CryptographicException">Thrown if decryption fails (e.g., key mismatch, invalid padding, data corruption).</exception>
         public byte[] Decrypt(byte[] cipherBytes)
         {
-            if (cipherBytes == null) throw new ArgumentNullException(nameof(cipherBytes));
-            if (rsaInstance == null) throw new ObjectDisposedException(nameof(RsaCipher));
+            if (cipherBytes == null)
+            {
+                throw new ArgumentNullException(nameof(cipherBytes));
+            }
+
+            if (rsaInstance == null)
+            {
+                throw new ObjectDisposedException(nameof(RsaCipher));
+            }
+
             if (!canDecrypt)
             {
                 throw new InvalidOperationException("Decryption requires the private key, which was not provided or imported.");
@@ -100,13 +149,10 @@ namespace Mtf.Network.Services.Crypting
 
             try
             {
-                // A Decrypt metódus kezeli a padding eltávolítását.
-                // Kivételt dob, ha a padding érvénytelen (pl. rossz kulcs vagy sérült adat).
                 return rsaInstance.Decrypt(cipherBytes, padding);
             }
             catch (CryptographicException ex)
             {
-                // A dekódolási hiba gyakran rossz kulcsra, sérült adatra vagy rossz padding módra utal.
                 throw new CryptographicException($"Decryption failed. Ensure the correct private key and padding mode ('{padding.Mode}') were used, and the data is not corrupted. Inner exception: {ex.Message}", ex);
             }
         }
@@ -118,9 +164,13 @@ namespace Mtf.Network.Services.Crypting
         /// <returns>A Base64 encoded string representing the encrypted data.</returns>
         public string Encrypt(string plainText)
         {
-            if (plainText == null) throw new ArgumentNullException(nameof(plainText));
-            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-            byte[] cipherBytes = Encrypt(plainBytes); // Kezeli a kivételeket
+            if (plainText == null)
+            {
+                throw new ArgumentNullException(nameof(plainText));
+            }
+
+            var plainBytes = Encoding.UTF8.GetBytes(plainText);
+            var cipherBytes = Encrypt(plainBytes);
             return Convert.ToBase64String(cipherBytes);
         }
 
@@ -135,18 +185,21 @@ namespace Mtf.Network.Services.Crypting
         /// <exception cref="InvalidOperationException">Thrown if the private key is not available.</exception>
         public string Decrypt(string cipherText)
         {
-            if (cipherText == null) throw new ArgumentNullException(nameof(cipherText));
+            if (cipherText == null)
+            {
+                throw new ArgumentNullException(nameof(cipherText));
+            }
+
             try
             {
                 byte[] cipherBytes = Convert.FromBase64String(cipherText);
-                byte[] plainBytes = Decrypt(cipherBytes); // Kezeli a kivételeket
+                byte[] plainBytes = Decrypt(cipherBytes);
                 return Encoding.UTF8.GetString(plainBytes);
             }
-            catch (FormatException ex) // A FromBase64String dobhatja
+            catch (FormatException ex)
             {
                 throw new FormatException("Invalid Base64 string provided for decryption.", ex);
             }
-            // CryptographicException és InvalidOperationException átdobódik a Decrypt(byte[])-ból.
         }
 
         public void Dispose()

@@ -1,9 +1,10 @@
 ﻿using Mtf.Network.Services.Crypting;
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Security.Cryptography;
 
-namespace Mtf.Network.Tests
+namespace Mtf.Network.UnitTest
 {
     [TestFixture]
     public class RsaCipherTests
@@ -21,6 +22,26 @@ namespace Mtf.Network.Tests
             }
 
             rsaCipher = new RsaCipher(rsaParameters);
+        }
+
+        [Test]
+        public void Encrypt_Decrypt_ValidInput_ShouldReturnSameResultWithFileKeys()
+        {
+            var keyFilePath = "key.xml";
+            if (!File.Exists(keyFilePath))
+            {
+                using (var rsaInstance = new RSACng { KeySize = 2048 })
+                {
+                    var xml = rsaInstance.ToXmlString(true);
+                    File.WriteAllText(keyFilePath, xml);
+                }
+            }
+
+            var cipher = new RsaCipher(keyFilePath);
+            var originalText = "hello";
+            var encrypted = cipher.Encrypt(originalText);
+            var decrypted = cipher.Decrypt(encrypted);
+            Assert.That(decrypted, Is.EqualTo(originalText));
         }
 
         [Test]

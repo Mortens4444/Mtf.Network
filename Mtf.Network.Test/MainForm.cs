@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -42,7 +43,17 @@ namespace Mtf.Network.Test
             {
                 if (server == null)
                 {
-                    var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    var keyFilePath = "key.xml";
+                    if (!File.Exists(keyFilePath))
+                    {
+                        using (var rsaInstance = new RSACng { KeySize = 2048 })
+                        {
+                            var xml = rsaInstance.ToXmlString(true);
+                            File.WriteAllText(keyFilePath, xml);
+                        }
+                    }
+
+                    var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
                     server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: ciphers);
                     server.DataArrived += DataArrivedEventHandler;
                     server.Start();
@@ -110,7 +121,7 @@ namespace Mtf.Network.Test
             {
                 if (client == null)
                 {
-                    var ciphers = chkClientUseEnrypt.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    var ciphers = chkClientUseEnrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
                     client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, ciphers: ciphers);
                     client.DataArrived += ClientDataArrivedEventHandler;
                 }
@@ -131,7 +142,7 @@ namespace Mtf.Network.Test
             {
                 if (client2 == null)
                 {
-                    var ciphers = chkClientUseEnrypt2.Checked ? new ICipher[] { new CaesarCipher(1) } : Array.Empty<ICipher>();
+                    var ciphers = chkClientUseEnrypt2.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
                     client2 = new Client(tbServerAddress.Text, (ushort)nudServerPort2.Value, ciphers: ciphers);
                     client2.DataArrived += ClientDataArrivedEventHandler2;
                 }
