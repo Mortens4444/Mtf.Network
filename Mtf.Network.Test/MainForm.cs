@@ -1,16 +1,16 @@
+using Mtf.Cryptography.AsymmetricCiphers;
+using Mtf.Cryptography.KeyGenerator;
+using Mtf.Cryptography.SymmetricCiphers;
 using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
 using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
 using Mtf.Network.Services;
-using Mtf.Network.Services.Crypting;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -43,16 +43,7 @@ namespace Mtf.Network.Test
             {
                 if (server == null)
                 {
-                    var keyFilePath = "key.xml";
-                    if (!File.Exists(keyFilePath))
-                    {
-                        using (var rsaInstance = new RSACng { KeySize = 2048 })
-                        {
-                            var xml = rsaInstance.ToXmlString(true);
-                            File.WriteAllText(keyFilePath, xml);
-                        }
-                    }
-
+                    RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml");
                     var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
                     server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: ciphers);
                     server.DataArrived += DataArrivedEventHandler;
