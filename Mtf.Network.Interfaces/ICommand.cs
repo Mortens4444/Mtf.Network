@@ -6,6 +6,6 @@ namespace Mtf.Network.Interfaces
     {
         bool CanHandle(string message);
 
-        void Execute(string message, Socket client, ICommunicator communicator);
+        void Execute(string message, Socket client, IServer server);
     }
 }

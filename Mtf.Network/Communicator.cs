@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Mtf.Cryptography.AsymmetricCiphers;
 using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
 using Mtf.Network.Commands;
@@ -254,7 +255,7 @@ namespace Mtf.Network
             {
                 throw new ArgumentNullException(nameof(cipher));
             }
-            Send(Socket, Encoding.GetBytes(RsaKeyCommand.RsaKeyHeader), false);
+            Send(Socket, Encoding.GetBytes(RsaCipher.RsaKeyHeader), false);
             Send(Socket, cipher.PublicKey, true);
         }
 
