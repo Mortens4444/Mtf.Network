@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace Mtf.Network.Interfaces
 {
-    public interface IServer
+    public interface IServer : ICommunicator
     {
         ConcurrentDictionary<Socket, RSAParameters> ClientPublicKeys { get; }
     }
