@@ -1,10 +1,10 @@
 using Mtf.Cryptography.AsymmetricCiphers;
-using Mtf.Cryptography.KeyGenerator;
+using Mtf.Cryptography.Interfaces;
+using Mtf.Cryptography.KeyGenerators;
 using Mtf.Cryptography.SymmetricCiphers;
 using Mtf.MessageBoxes;
 using Mtf.Network.Enums;
 using Mtf.Network.EventArg;
-using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;

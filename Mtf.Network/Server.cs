@@ -1,5 +1,6 @@
-﻿using Mtf.Extensions;
-using Mtf.Network.Interfaces;
+﻿using Mtf.Cryptography.Interfaces;
+using Mtf.Extensions;
+using Mtf.Network.Commands;
 using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
@@ -15,8 +16,9 @@ namespace Mtf.Network
 {
     public class Server : Communicator
     {
-        private readonly ConcurrentDictionary<Socket, string> connectedClients = new ConcurrentDictionary<Socket, string>();
-        private readonly IPAddress ipAddress;
+        public ConcurrentDictionary<Socket, string> ConnectedClients { get; private set; } = new ConcurrentDictionary<Socket, string>();
+        
+        public IPAddress IpAddress { get; private set; }
 
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream,
@@ -25,7 +27,7 @@ namespace Mtf.Network
             ushort listenerPort = 0,
             params ICipher[] ciphers) : base(addressFamily, socketType, protocolType, listenerPort, ciphers)
         {
-            this.ipAddress = ipAddress ?? IPAddress.Any;
+            IpAddress = ipAddress ?? IPAddress.Any;
         }
 
         /// <summary>
@@ -60,7 +62,7 @@ namespace Mtf.Network
 
         private void Initialize()
         {
-            Socket = NetUtils.CreateSocket(ipAddress, ListenerPortOfServer, AddressFamily, SocketType, ProtocolType, true);
+            Socket = NetUtils.CreateSocket(IpAddress, ListenerPortOfServer, AddressFamily, SocketType, ProtocolType, true);
             if (ListenerPortOfServer == 0)
             {
                 ListenerPortOfServer = (ushort)((IPEndPoint)Socket.LocalEndPoint).Port;
@@ -80,7 +82,7 @@ namespace Mtf.Network
                     Socket = clientSocket
                 };
 
-                connectedClients.TryAdd(clientSocket, clientSocket.RemoteEndPoint.ToString());
+                ConnectedClients.TryAdd(clientSocket, clientSocket.RemoteEndPoint.ToString());
 
                 state.ReadFromSocket(ServerReadCallback);
             }
@@ -116,20 +118,32 @@ namespace Mtf.Network
                     {
                         var bytes = new byte[read];
                         Array.Copy(state.Buffer, 0, bytes, 0, read);
+
+                        var message = Encoding.GetString(bytes);
+                        if (message.StartsWith("RSA key:", StringComparison.InvariantCulture))
+                        {
+                            var rsaKeyCommand = new RsaKeyCommand();
+                            rsaKeyCommand.Execute(message, clientSocket, this);
+                        }
+                        else
+                        {
+                            OnDataArrived(clientSocket, bytes);
+                        }
+
                         OnDataArrived(clientSocket, bytes);
                         state.ReadFromSocket(ServerReadCallback);
                     }
                     else
                     {
                         Console.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} disconnected gracefully.");
-                        connectedClients.TryRemove(clientSocket, out _);
+                        ConnectedClients.TryRemove(clientSocket, out _);
                         clientSocket.CloseSocket();
                     }
                 }
                 else
                 {
                     Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} detected as disconnected before EndReceive.");
-                    connectedClients.TryRemove(clientSocket, out _);
+                    ConnectedClients.TryRemove(clientSocket, out _);
                     clientSocket.CloseSocket();
                 }
             }
@@ -139,18 +153,18 @@ namespace Mtf.Network
                     ex.SocketErrorCode == SocketError.Shutdown) // WSANOTINITIALISED
             {
                 Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
-                connectedClients.TryRemove(clientSocket, out _);
+                ConnectedClients.TryRemove(clientSocket, out _);
                 clientSocket.CloseSocket();
             }
             catch (ObjectDisposedException)
             {
                 Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
-                connectedClients.TryRemove(clientSocket, out _);
+                ConnectedClients.TryRemove(clientSocket, out _);
             }
             catch (Exception ex) 
             {
                 Console.Error.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
-                connectedClients.TryRemove(clientSocket, out _);
+                ConnectedClients.TryRemove(clientSocket, out _);
                 clientSocket.CloseSocket();
             }
         }
@@ -181,17 +195,17 @@ namespace Mtf.Network
         protected override void DisposeManagedResources()
         {
             Stop();
-            foreach (var client in connectedClients.Keys)
+            foreach (var client in ConnectedClients.Keys)
             {
                 client.CloseSocket();
             }
-            connectedClients.Clear();
+            ConnectedClients.Clear();
         }
 
         public bool SendBytesToAllClients(byte[] data, bool appendNewLine = false)
         {
             var result = true;
-            foreach (var clientSocket in connectedClients.Keys.ToList())
+            foreach (var clientSocket in ConnectedClients.Keys.ToList())
             {
                 try
                 {
@@ -199,10 +213,10 @@ namespace Mtf.Network
                 }
                 catch (Exception ex)
                 {
-                    connectedClients.TryRemove(clientSocket, out var value);
+                    ConnectedClients.TryRemove(clientSocket, out var value);
                     if (Logger != null)
                     {
-                        logErrorAction(Logger, this, $"Sending data failed to {value}", ex);
+                        LogErrorAction(Logger, this, $"Sending data failed to {value}", ex);
                     }
                 }
             }

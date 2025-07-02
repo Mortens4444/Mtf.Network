@@ -1,7 +1,6 @@
-﻿using Mtf.Network.EventArg;
-using Mtf.Network.Interfaces;
+﻿using Mtf.Cryptography.Interfaces;
+using Mtf.Network.EventArg;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;

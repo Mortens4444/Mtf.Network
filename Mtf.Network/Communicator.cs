@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
 using Mtf.Network.EventArg;
-using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
 using System;
 using System.Net.Sockets;
@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class Communicator : Disposable
+    public class Communicator : Disposable, ICommunicator
     {
         public event EventHandler<DataArrivedEventArgs> DataArrived;
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
         public event EventHandler<MessageEventArgs> MessageSent;
 
-        protected readonly Action<ILogger, Communicator, string, Exception> logErrorAction;
-        private readonly ICipher[] ciphers;
+        protected Action<ILogger, Communicator, string, Exception> LogErrorAction { get; }
+        public ICipher[] Ciphers { get; }
 
         public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer, params ICipher[] ciphers)
         {
@@ -25,8 +25,8 @@ namespace Mtf.Network
             AddressFamily = addressFamily;
             SocketType = socketType;
             ProtocolType = protocolType;
-            this.ciphers = ciphers;
-            logErrorAction = LoggerMessage.Define<Communicator, string>(LogLevel.Error, new EventId(1, "SerialDevice"), "Error occurred in communicator: {Device}, {EventDetails}");
+            this.Ciphers = ciphers;
+            LogErrorAction = LoggerMessage.Define<Communicator, string>(LogLevel.Error, new EventId(1, "SerialDevice"), "Error occurred in communicator: {Device}, {EventDetails}");
         }
 
         public ILogger Logger { get; set; }
@@ -246,6 +246,18 @@ namespace Mtf.Network
             return tcs.Task;
         }
 
+        protected void SendPublicKey(IAsymmetricCipher cipher)
+        {
+            if (cipher == null)
+            {
+                throw new ArgumentNullException(nameof(cipher));
+            }
+
+            var base64Key = Convert.ToBase64String(cipher.PublicKey);
+            var message = $"RSA key:{base64Key}";
+            Send(Socket, Encoding.GetBytes(message), true); // \n, ha kell
+        }
+
         private Task<bool> SendNewLine(Socket socket)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -323,6 +335,17 @@ namespace Mtf.Network
             return Encoding.GetBytes(messageToSend);
         }
 
+        public void SendAsymmetricCiphersPublicKeys()
+        {
+            foreach (var cipher in Ciphers)
+            {
+                if (cipher is IAsymmetricCipher asymmetricCipher)
+                {
+                    SendPublicKey(asymmetricCipher);
+                }
+            }
+        }
+
         public override string ToString()
         {
             if (Socket == null)
@@ -340,20 +363,20 @@ namespace Mtf.Network
 
         private byte[] Transform(byte[] data, bool encrypt)
         {
-            if (ciphers != null)
+            if (Ciphers != null)
             {
                 if (encrypt)
                 {
-                    for (int i = 0; i < ciphers.Length; i++)
+                    for (int i = 0; i < Ciphers.Length; i++)
                     {
-                        data = ciphers[i].Encrypt(data);
+                        data = Ciphers[i].Encrypt(data);
                     }
                 }
                 else
                 {
-                    for (int i = ciphers.Length - 1; i >= 0; i--)
+                    for (int i = Ciphers.Length - 1; i >= 0; i--)
                     {
-                        data = ciphers[i].Decrypt(data);
+                        data = Ciphers[i].Decrypt(data);
                     }
                 }
             }

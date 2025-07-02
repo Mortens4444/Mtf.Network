@@ -4,6 +4,7 @@ using System;
 
 namespace Mtf.Network.UnitTest.Services
 {
+    [TestFixture]
     public class BufferHelperTests
     {
         [Test]

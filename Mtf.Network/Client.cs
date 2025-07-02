@@ -1,5 +1,5 @@
-﻿using Mtf.Extensions;
-using Mtf.Network.Interfaces;
+﻿using Mtf.Cryptography.Interfaces;
+using Mtf.Extensions;
 using Mtf.Network.Services;
 using System;
 using System.Net;
@@ -12,6 +12,13 @@ namespace Mtf.Network
     public class Client : Communicator
     {
         private Task receiverTask;
+
+        public Client(Server server, AddressFamily addressFamily = AddressFamily.InterNetwork,
+            SocketType socketType = SocketType.Stream,
+            ProtocolType protocolType = ProtocolType.Tcp,
+            params ICipher[] ciphers) : this(server.IpAddress.ToString(), server.ListenerPortOfServer,
+                addressFamily, socketType, protocolType, ciphers)
+        { }
 
         public Client(string serverHost,
             ushort listenerPort,
@@ -37,6 +44,9 @@ namespace Mtf.Network
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 Socket.Connect(ServerHostnameOrIPAddress, ListenerPortOfServer, Timeout, NetUtils.GetLocalIPAddresses);
+
+                SendAsymmetricCiphersPublicKeys();
+
                 receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);
             }
         }
