@@ -1,24 +1,31 @@
 ﻿using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
 using Mtf.Network.Commands;
+using Mtf.Network.Interfaces;
 using Mtf.Network.Models;
 using Mtf.Network.Services;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class Server : Communicator
+    public class Server : Communicator, IServer
     {
         public ConcurrentDictionary<Socket, string> ConnectedClients { get; private set; } = new ConcurrentDictionary<Socket, string>();
         
+        public ConcurrentDictionary<Socket, RSAParameters> ClientPublicKeys { get; private set; } = new ConcurrentDictionary<Socket, RSAParameters>();
+
         public IPAddress IpAddress { get; private set; }
+
+        private List<ICommand> RegisteredCommands = new List<ICommand> { new RsaKeyCommand() };
 
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream,
@@ -120,14 +127,13 @@ namespace Mtf.Network
                         Array.Copy(state.Buffer, 0, bytes, 0, read);
 
                         var message = Encoding.GetString(bytes);
-                        if (message.StartsWith("RSA key:", StringComparison.InvariantCulture))
+                        foreach (var command in RegisteredCommands)
                         {
-                            var rsaKeyCommand = new RsaKeyCommand();
-                            rsaKeyCommand.Execute(message, clientSocket, this);
-                        }
-                        else
-                        {
-                            OnDataArrived(clientSocket, bytes);
+                            if (command.CanHandle(message))
+                            {
+                                command.Execute(message, clientSocket, this);
+                                return;
+                            }
                         }
 
                         OnDataArrived(clientSocket, bytes);

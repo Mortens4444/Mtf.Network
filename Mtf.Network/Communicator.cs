@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
+using Mtf.Network.Commands;
 using Mtf.Network.EventArg;
+using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
 using System;
 using System.Net.Sockets;
@@ -252,10 +254,8 @@ namespace Mtf.Network
             {
                 throw new ArgumentNullException(nameof(cipher));
             }
-
-            var base64Key = Convert.ToBase64String(cipher.PublicKey);
-            var message = $"RSA key:{base64Key}";
-            Send(Socket, Encoding.GetBytes(message), true); // \n, ha kell
+            Send(Socket, Encoding.GetBytes(RsaKeyCommand.RsaKeyHeader), false);
+            Send(Socket, cipher.PublicKey, true);
         }
 
         private Task<bool> SendNewLine(Socket socket)
