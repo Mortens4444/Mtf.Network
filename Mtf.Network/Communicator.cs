@@ -179,14 +179,17 @@ namespace Mtf.Network
             return Communicator.SendAsync(socket, ConvertMessageToData(message, appendNewLine));
         }
 
-        public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false)
+        public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false, bool encryptData = true)
         {
             if (socket?.Connected != true)
             {
                 return false;
             }
 
-            bytes = Transform(bytes, true);
+            if (encryptData)
+            {
+                bytes = Transform(bytes, true);
+            }
             var success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
             if (success && appendNewLine)
             {
@@ -247,16 +250,6 @@ namespace Mtf.Network
             }
 
             return tcs.Task;
-        }
-
-        protected void SendPublicKey(IAsymmetricCipher cipher)
-        {
-            if (cipher == null)
-            {
-                throw new ArgumentNullException(nameof(cipher));
-            }
-            Send(Socket, Encoding.GetBytes(RsaCipher.RsaKeyHeader), false);
-            Send(Socket, cipher.PublicKey, true);
         }
 
         private Task<bool> SendNewLine(Socket socket)
@@ -345,6 +338,16 @@ namespace Mtf.Network
                     SendPublicKey(asymmetricCipher);
                 }
             }
+        }
+
+        protected void SendPublicKey(IAsymmetricCipher cipher)
+        {
+            if (cipher == null)
+            {
+                throw new ArgumentNullException(nameof(cipher));
+            }
+            Send(Socket, Encoding.GetBytes(RsaCipher.RsaKeyHeader), false, false);
+            Send(Socket, cipher.PublicKey, true, false);
         }
 
         public override string ToString()

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Mtf.Network
 
         public IPAddress IpAddress { get; private set; }
 
-        private List<ICommand> RegisteredCommands = new List<ICommand> { new RsaKeyCommand() };
+        private List<ICommand> RegisteredCommands = LoadCommands(typeof(RsaKeyCommand).Namespace);
 
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream,
@@ -266,6 +267,29 @@ namespace Mtf.Network
                 result &= SendBytesToAllClients(partBytes, true);
             }
             return result;
+        }
+
+        private static List<ICommand> LoadCommands(string targetNamespace)
+        {
+            var commandType = typeof(ICommand);
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var types = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract)
+                .Where(t => commandType.IsAssignableFrom(t))
+                .Where(t => t.Namespace == targetNamespace);
+
+            var instances = new List<ICommand>();
+            foreach (var type in types)
+            {
+                if (type.GetConstructor(Type.EmptyTypes) != null)
+                {
+                    var instance = (ICommand)Activator.CreateInstance(type);
+                    instances.Add(instance);
+                }
+            }
+
+            return instances;
         }
     }
 }

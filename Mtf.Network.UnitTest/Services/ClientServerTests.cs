@@ -2,7 +2,6 @@
 using Mtf.Cryptography.Interfaces;
 using Mtf.Cryptography.SymmetricCiphers;
 using Mtf.Extensions;
-using Mtf.Network.EventArg;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -14,8 +13,14 @@ namespace Mtf.Network.UnitTest.Services
     [TestFixture]
     public class ClientServerTests
     {
-        [Test]
-        public void ClientServerSendReceiveTestWithoutEncryption()
+        private const bool IncludePrivateParameters = true;
+        private const bool UseOaepPadding = true;
+
+        [TestCase(null, null, null, null, TestName = "NoEncryption")]
+        [TestCase(typeof(CaesarCipher), new object[] { 1 }, typeof(CaesarCipher), new object[] { 1 }, TestName = "CaesarEncryption")]
+        [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "SameRsaEncryption")]
+        [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "client1FullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "MixedEncryption")]
+        public void ClientServerSendReceiveTest(Type serverCipherType, object[] serverArgs, Type clientCipherType, object[] clientArgs)
         {
             var messageId = 0;
             var serverReceivedFirst = new TaskCompletionSource<bool>();
@@ -23,25 +28,26 @@ namespace Mtf.Network.UnitTest.Services
             var client1Received = new TaskCompletionSource<bool>();
             var client2Received = new TaskCompletionSource<bool>();
 
-            var server = new Server(ipAddress: IPAddress.Parse("192.168.0.58"));
+            var serverCiphers = CreateCiphers(serverCipherType, serverArgs);
+            var server = new Server(ipAddress: IPAddress.Parse("192.168.0.58"), ciphers: serverCiphers);
             Client client1 = null;
             Client client2 = null;
 
-            server.DataArrived += (object sender, DataArrivedEventArgs e) =>
+            server.DataArrived += (sender, e) =>
             {
                 lock (server)
                 {
                     if (messageId == 0)
                     {
-                        Assert.That(Enumerable.SequenceEqual(e.Data, new byte[] { 65, 66, 67 }), Is.True);
-                        server.SendMessageToClient((((Server)sender).ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client1.ListenerPortOfClient).Key), "A");
+                        Assert.That(e.Data, Is.EqualTo(new byte[] { 65, 66, 67 }));
+                        server.SendMessageToClient(server.ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client1.ListenerPortOfClient).Key, "A");
                         serverReceivedFirst.SetResult(true);
                         messageId++;
                     }
                     else if (messageId == 1)
                     {
-                        Assert.That(Enumerable.SequenceEqual(e.Data, new byte[] { 67, 66, 65 }), Is.True);
-                        server.SendMessageToClient(((Server)sender).ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client2.ListenerPortOfClient).Key, "B");
+                        Assert.That(e.Data, Is.EqualTo(new byte[] { 67, 66, 65 }));
+                        server.SendMessageToClient(server.ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client2.ListenerPortOfClient).Key, "B");
                         serverReceivedSecond.SetResult(true);
                         messageId++;
                     }
@@ -49,32 +55,27 @@ namespace Mtf.Network.UnitTest.Services
             };
             server.Start();
 
-            client1 = new Client(server);
-            client2 = new Client(server);
+            client1 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs, index: 0));
+            client2 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs, index: 1));
 
             client1.DataArrived += (s, e) =>
             {
                 Assert.That(e.Data, Is.EqualTo(new byte[] { 65 }));
                 client1Received.SetResult(true);
             };
-            client1.Connect();
-
             client2.DataArrived += (s, e) =>
             {
                 Assert.That(e.Data, Is.EqualTo(new byte[] { 66 }));
                 client2Received.SetResult(true);
             };
+
+            client1.Connect();
             client2.Connect();
 
             SendData(client1, "ABC");
+            Task.WaitAll(serverReceivedFirst.Task);
             SendData(client2, "CBA");
-
-            Task.WaitAll(
-                serverReceivedFirst.Task,
-                serverReceivedSecond.Task,
-                client1Received.Task,
-                client2Received.Task
-            );
+            Task.WaitAll(serverReceivedSecond.Task, client1Received.Task, client2Received.Task);
 
             server.Dispose();
             client1.Dispose();
@@ -83,76 +84,19 @@ namespace Mtf.Network.UnitTest.Services
             Assert.That(messageId, Is.EqualTo(2));
         }
 
-        [Test]
-        public void ClientServerSendReceiveTestWithEncryption()
+        private static ICipher[] CreateCiphers(Type type, object[] args, int index = -1)
         {
-            var messageId = 0;
-            var serverReceivedFirst = new TaskCompletionSource<bool>();
-            var serverReceivedSecond = new TaskCompletionSource<bool>();
-            var client1Received = new TaskCompletionSource<bool>();
-            var client2Received = new TaskCompletionSource<bool>();
-
-            var serverCiphers = new ICipher[] { new CaesarCipher(1), new RsaCipher("serverFullKey.xml") };
-            var server = new Server(ipAddress: IPAddress.Parse("192.168.0.58"), ciphers: serverCiphers);
-            Client client1 = null;
-            Client client2 = null;
-
-            server.DataArrived += (object sender, DataArrivedEventArgs e) =>
+            if (type == null)
             {
-                lock (server)
-                {
-                    if (messageId == 0)
-                    {
-                        Assert.That(Enumerable.SequenceEqual(e.Data, new byte[] { 65, 66, 67 }), Is.True);
-                        server.SendMessageToClient((((Server)sender).ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client1.ListenerPortOfClient).Key), "A");
-                        serverReceivedFirst.SetResult(true);
-                        messageId++;
-                    }
-                    else if (messageId == 1)
-                    {
-                        Assert.That(Enumerable.SequenceEqual(e.Data, new byte[] { 67, 66, 65 }), Is.True);
-                        server.SendMessageToClient(((Server)sender).ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client2.ListenerPortOfClient).Key, "B");
-                        serverReceivedSecond.SetResult(true);
-                        messageId++;
-                    }
-                }    
-            };
-            server.Start();
+                return Array.Empty<ICipher>();
+            }
 
-            var client1Ciphers = new ICipher[] { new CaesarCipher(1)/*, new RsaCipher("client1FullKey.xml")*/ };
-            client1 = new Client(server, ciphers: client1Ciphers);
-            var client2Ciphers = new ICipher[] { new CaesarCipher(1)/*, new RsaCipher("client2FullKey.xml")*/ };
-            client2 = new Client(server, ciphers: client2Ciphers);
-
-            client1.DataArrived += (s, e) =>
+            if (args == null)
             {
-                Assert.That(e.Data, Is.EqualTo(new byte[] { 65 }));
-                client1Received.SetResult(true);
-            };
-            client1.Connect();
+                return new[] { (ICipher)Activator.CreateInstance(type) };
+            }
 
-            client2.DataArrived += (s, e) =>
-            {
-                Assert.That(e.Data, Is.EqualTo(new byte[] { 66 }));
-                client2Received.SetResult(true);
-            };
-            client2.Connect();
-
-            SendData(client1, "ABC");
-            SendData(client2, "CBA");
-
-            Task.WaitAll(
-                serverReceivedFirst.Task,
-                serverReceivedSecond.Task,
-                client1Received.Task,
-                client2Received.Task
-            );
-
-            server.Dispose();
-            client1.Dispose();
-            client2.Dispose();
-
-            Assert.That(messageId, Is.EqualTo(2));
+            return new[] { (ICipher)Activator.CreateInstance(type, args) };
         }
 
         private static void SendData(Communicator communicator, string data)
