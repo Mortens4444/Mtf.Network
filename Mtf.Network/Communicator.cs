@@ -331,16 +331,16 @@ namespace Mtf.Network
 
         public void SendAsymmetricCiphersPublicKeys()
         {
-            foreach (var cipher in Ciphers)
-            {
-                if (cipher is IAsymmetricCipher asymmetricCipher)
-                {
-                    SendPublicKey(asymmetricCipher);
-                }
-            }
+            //foreach (var cipher in Ciphers)
+            //{
+            //    if (cipher is IAsymmetricCipher asymmetricCipher)
+            //    {
+            //        SendPublicKey(asymmetricCipher);
+            //    }
+            //}
         }
 
-        protected void SendPublicKey(IAsymmetricCipher cipher)
+        private void SendPublicKey(IAsymmetricCipher cipher)
         {
             if (cipher == null)
             {

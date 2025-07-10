@@ -162,17 +162,20 @@ namespace Mtf.Network
                 Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} disconnected abruptly (Error: {ex.SocketErrorCode}).");
                 ConnectedClients.TryRemove(clientSocket, out _);
                 clientSocket.CloseSocket();
+                OnErrorOccurred(ex);
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException ex)
             {
                 Console.Error.WriteLine($"{nameof(Server)} {nameof(ServerReadCallback)} - Client {clientSocket?.RemoteEndPoint} socket was already disposed.");
                 ConnectedClients.TryRemove(clientSocket, out _);
+                OnErrorOccurred(ex);
             }
             catch (Exception ex) 
             {
                 Console.Error.WriteLine($"Error reading from client {clientSocket?.RemoteEndPoint}: {ex.Message}");
                 ConnectedClients.TryRemove(clientSocket, out _);
                 clientSocket.CloseSocket();
+                OnErrorOccurred(ex);
             }
         }
 
@@ -187,14 +190,16 @@ namespace Mtf.Network
                         _ = Socket.BeginAccept(new AsyncCallback(AcceptCallback), Socket);
                     }
                 }
-                catch (ObjectDisposedException)
+                catch (ObjectDisposedException ex)
                 {
                     Console.Error.WriteLine($"{nameof(Server)} {nameof(ListenerEngine)} - Socket was disposed.");
+                    OnErrorOccurred(ex);
                     break;
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"{nameof(Server)} {nameof(ListenerEngine)} - Unexpected error: {ex.Message}");
+                    OnErrorOccurred(ex);
                 }
             }
         }
@@ -225,6 +230,7 @@ namespace Mtf.Network
                     {
                         LogErrorAction(Logger, this, $"Sending data failed to {value}", ex);
                     }
+                    OnErrorOccurred(ex);
                 }
             }
             return result;

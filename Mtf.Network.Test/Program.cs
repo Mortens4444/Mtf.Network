@@ -12,7 +12,7 @@ namespace Mtf.Network.Test
         [STAThread]
         static void Main()
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
 #if NETCOREAPP

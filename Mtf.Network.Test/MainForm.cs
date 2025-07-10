@@ -695,7 +695,7 @@ namespace Mtf.Network.Test
 
                 //var process = ProcessUtils.StartApplicationWithPsExec("calc");
                 var process = ProcessUtils.StartApplicationWithPsExec("systeminfo", "192.168.0.246", "Sup_dev_env", "pass", encoding: Encoding.GetEncoding(852),
-                    outputDataReceived: (_, e) => { output.AppendLine(e.Data); }, errorDataReceived: (_, e) => { output.AppendLine(e.Data); });
+                    outputDataReceived: (_, d) => { output.AppendLine(d.Data); }, errorDataReceived: (_, d) => { output.AppendLine(d.Data); });
 
                 process.WaitForExit();
                 rtbOutput.Text = output.ToString();

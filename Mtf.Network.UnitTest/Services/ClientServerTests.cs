@@ -1,9 +1,11 @@
 ﻿using Mtf.Cryptography.AsymmetricCiphers;
 using Mtf.Cryptography.Interfaces;
+using Mtf.Cryptography.KeyGenerators;
 using Mtf.Cryptography.SymmetricCiphers;
 using Mtf.Extensions;
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,10 +20,15 @@ namespace Mtf.Network.UnitTest.Services
 
         [TestCase(null, null, null, null, TestName = "NoEncryption")]
         [TestCase(typeof(CaesarCipher), new object[] { 1 }, typeof(CaesarCipher), new object[] { 1 }, TestName = "CaesarEncryption")]
-        [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "SameRsaEncryption")]
+        [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "SameRsaKey")]
         [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "client1FullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "MixedEncryption")]
         public void ClientServerSendReceiveTest(Type serverCipherType, object[] serverArgs, Type clientCipherType, object[] clientArgs)
         {
+            if (!File.Exists("serverFullKey.xml"))
+            {
+                RsaKeyGenerator.GenerateKeyFiles("serverFullKey.xml", "public.xml");
+            }
+
             var messageId = 0;
             var serverReceivedFirst = new TaskCompletionSource<bool>();
             var serverReceivedSecond = new TaskCompletionSource<bool>();
@@ -33,6 +40,14 @@ namespace Mtf.Network.UnitTest.Services
             Client client1 = null;
             Client client2 = null;
 
+            server.ErrorOccurred += (s, e) =>
+            {
+                client1Received.SetResult(true);
+                client2Received.SetResult(true);
+                serverReceivedSecond.SetResult(true);
+                serverReceivedFirst.SetResult(true);
+                Assert.Fail($"Server error: {e.Exception.Message}");
+            };
             server.DataArrived += (sender, e) =>
             {
                 lock (server)
@@ -55,8 +70,8 @@ namespace Mtf.Network.UnitTest.Services
             };
             server.Start();
 
-            client1 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs, index: 0));
-            client2 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs, index: 1));
+            client1 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs));
+            client2 = new Client(server, ciphers: CreateCiphers(clientCipherType, clientArgs));
 
             client1.DataArrived += (s, e) =>
             {
@@ -84,7 +99,7 @@ namespace Mtf.Network.UnitTest.Services
             Assert.That(messageId, Is.EqualTo(2));
         }
 
-        private static ICipher[] CreateCiphers(Type type, object[] args, int index = -1)
+        private static ICipher[] CreateCiphers(Type type, object[] args)
         {
             if (type == null)
             {
