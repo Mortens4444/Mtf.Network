@@ -24,9 +24,13 @@ namespace Mtf.Network.UnitTest.Services
         [TestCase(typeof(RsaCipher), new object[] { "serverFullKey.xml", IncludePrivateParameters, UseOaepPadding }, typeof(RsaCipher), new object[] { "client1FullKey.xml", IncludePrivateParameters, UseOaepPadding }, TestName = "MixedEncryption")]
         public void ClientServerSendReceiveTest(Type serverCipherType, object[] serverArgs, Type clientCipherType, object[] clientArgs)
         {
-            if (!File.Exists("serverFullKey.xml"))
+            foreach (var privateKey in new[] { "serverFullKey.xml", "client1FullKey.xml" })
             {
-                RsaKeyGenerator.GenerateKeyFiles("serverFullKey.xml", "public.xml");
+                if (!File.Exists(privateKey))
+                {
+                    var publicKey = "public_" + privateKey;
+                    RsaKeyGenerator.GenerateKeyFiles(privateKey, publicKey);
+                }
             }
 
             var messageId = 0;
