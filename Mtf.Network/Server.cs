@@ -26,7 +26,7 @@ namespace Mtf.Network
 
         public IPAddress IpAddress { get; private set; }
 
-        private List<ICommand> RegisteredCommands = LoadCommands(typeof(RsaKeyCommand).Namespace);
+        private readonly List<ICommand> RegisteredCommands = LoadCommands(typeof(RsaKeyCommand).Namespace);
 
         public Server(AddressFamily addressFamily = AddressFamily.InterNetwork,
             SocketType socketType = SocketType.Stream,

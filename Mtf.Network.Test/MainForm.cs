@@ -43,7 +43,10 @@ namespace Mtf.Network.Test
             {
                 if (server == null)
                 {
-                    RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml");
+                    if (!File.Exists("key.xml"))
+                    {
+                        RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml");
+                    }
                     var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
                     server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: ciphers);
                     server.DataArrived += DataArrivedEventHandler;
