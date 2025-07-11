@@ -2,7 +2,6 @@
 using Mtf.Cryptography.AsymmetricCiphers;
 using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
-using Mtf.Network.Commands;
 using Mtf.Network.EventArg;
 using Mtf.Network.Interfaces;
 using Mtf.Network.Services;
@@ -108,7 +107,9 @@ namespace Mtf.Network
         public async Task<bool> SendAsync(byte[] bytes, bool appendNewLine = false)
         {
             if (Socket?.Connected != true)
+            {
                 return false;
+            }
 
             try
             {

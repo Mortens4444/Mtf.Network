@@ -46,10 +46,10 @@ namespace Mtf.Network.UnitTest.Services
 
             server.ErrorOccurred += (s, e) =>
             {
-                client1Received.SetResult(true);
-                client2Received.SetResult(true);
-                serverReceivedSecond.SetResult(true);
-                serverReceivedFirst.SetResult(true);
+                client1Received.TrySetResult(true);
+                client2Received.TrySetResult(true);
+                serverReceivedSecond.TrySetResult(true);
+                serverReceivedFirst.TrySetResult(true);
                 Assert.Fail($"Server error: {e.Exception.Message}");
             };
             server.DataArrived += (sender, e) =>
@@ -60,14 +60,14 @@ namespace Mtf.Network.UnitTest.Services
                     {
                         Assert.That(e.Data, Is.EqualTo(new byte[] { 65, 66, 67 }));
                         server.SendMessageToClient(server.ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client1.ListenerPortOfClient).Key, "A");
-                        serverReceivedFirst.SetResult(true);
+                        serverReceivedFirst.TrySetResult(true);
                         messageId++;
                     }
                     else if (messageId == 1)
                     {
                         Assert.That(e.Data, Is.EqualTo(new byte[] { 67, 66, 65 }));
                         server.SendMessageToClient(server.ConnectedClients.First(c => c.Key.RemoteEndPoint.GetPort() == client2.ListenerPortOfClient).Key, "B");
-                        serverReceivedSecond.SetResult(true);
+                        serverReceivedSecond.TrySetResult(true);
                         messageId++;
                     }
                 }
@@ -80,12 +80,12 @@ namespace Mtf.Network.UnitTest.Services
             client1.DataArrived += (s, e) =>
             {
                 Assert.That(e.Data, Is.EqualTo(new byte[] { 65 }));
-                client1Received.SetResult(true);
+                client1Received.TrySetResult(true);
             };
             client2.DataArrived += (s, e) =>
             {
                 Assert.That(e.Data, Is.EqualTo(new byte[] { 66 }));
-                client2Received.SetResult(true);
+                client2Received.TrySetResult(true);
             };
 
             client1.Connect();
