@@ -45,10 +45,11 @@ namespace Mtf.Network.Test
                 {
                     if (!File.Exists("key.xml"))
                     {
-                        RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml");
+                        RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml", 2048, true);
                     }
-                    var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
+                    var ciphers = chkUseEncrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml", true) } : Array.Empty<ICipher>();
                     server = new Server(listenerPort: (ushort)nudServerListeningPort.Value, ciphers: ciphers);
+                    server.ErrorOccurred += Server_ErrorOccurred;
                     server.DataArrived += DataArrivedEventHandler;
                     server.Start();
                     lblServer.Text = server.ToString();
@@ -62,23 +63,34 @@ namespace Mtf.Network.Test
             }
         }
 
-        private void DataArrivedEventHandler(object sender, DataArrivedEventArgs e)
+        private void Server_ErrorOccurred(object sender, ExceptionEventArgs e)
         {
-            Invoke((Action)(async () =>
+            ErrorBox.Show(e.Exception);
+        }
+
+        private async void DataArrivedEventHandler(object sender, DataArrivedEventArgs e)
+        {
+            string text = null;
+            Invoke((Action)(() =>
             {
                 rtbServerReceivedMessages.AppendText($"{server?.Encoding.GetString(e.Data)}");
-                await SendtoClient(e.Socket);
-                //await SendToAllClient();
+                text = rtbSendToClient.Text;
+            }));
+
+            await SendtoClient(e.Socket, text);
+
+            Invoke((Action)(() =>
+            {
+                rtbSendToClient.Text = String.Empty;
             }));
         }
 
-        private async Task SendtoClient(Socket socket)
+        private async Task SendtoClient(Socket socket, string text)
         {
             if (server != null)
             {
                 await Task.Delay(50);
-                server.SendMessageToClient(socket, rtbSendToClient.Text);
-                rtbSendToClient.Text = String.Empty;
+                server.SendMessageToClient(socket, text);
             }
         }
 
@@ -115,7 +127,7 @@ namespace Mtf.Network.Test
             {
                 if (client == null)
                 {
-                    var ciphers = chkClientUseEnrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
+                    var ciphers = chkClientUseEnrypt.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml", true) } : Array.Empty<ICipher>();
                     client = new Client(tbServerAddress.Text, (ushort)nudServerPort.Value, ciphers: ciphers);
                     client.DataArrived += ClientDataArrivedEventHandler;
                 }
@@ -136,7 +148,7 @@ namespace Mtf.Network.Test
             {
                 if (client2 == null)
                 {
-                    var ciphers = chkClientUseEnrypt2.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml") } : Array.Empty<ICipher>();
+                    var ciphers = chkClientUseEnrypt2.Checked ? new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml", true) } : Array.Empty<ICipher>();
                     client2 = new Client(tbServerAddress.Text, (ushort)nudServerPort2.Value, ciphers: ciphers);
                     client2.DataArrived += ClientDataArrivedEventHandler2;
                 }

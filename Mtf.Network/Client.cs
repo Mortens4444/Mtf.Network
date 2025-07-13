@@ -45,7 +45,7 @@ namespace Mtf.Network
                 CancellationTokenSource = new CancellationTokenSource();
                 Socket.Connect(ServerHostnameOrIPAddress, ListenerPortOfServer, Timeout, NetUtils.GetLocalIPAddresses);
 
-                SendAsymmetricCiphersPublicKeys();
+                //SendAsymmetricCiphersPublicKeys();
 
                 receiverTask = Task.Run(Receiver, CancellationTokenSource.Token);
             }
@@ -75,7 +75,7 @@ namespace Mtf.Network
             {
                 DontFragment = true
             };
-            SetBufferSize();
+            SocketConfigurator.SetBufferSize(Socket);
             if (ProtocolType != ProtocolType.Udp)
             {
                 Socket.NoDelay = true;

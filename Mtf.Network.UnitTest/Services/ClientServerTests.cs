@@ -3,6 +3,7 @@ using Mtf.Cryptography.Interfaces;
 using Mtf.Cryptography.KeyGenerators;
 using Mtf.Cryptography.SymmetricCiphers;
 using Mtf.Extensions;
+using Mtf.Network.EventArg;
 using NUnit.Framework;
 using System;
 using System.IO;
@@ -124,6 +125,61 @@ namespace Mtf.Network.UnitTest.Services
             {
                 throw new InvalidOperationException($"Failed to send data from {communicator}");
             }
+        }
+
+        [Test]
+        public void SendReceiveTest()
+        {
+            if (!File.Exists("key.xml"))
+            {
+                RsaKeyGenerator.GenerateKeyFiles("key.xml", "public_key.xml", 2048, true);
+            }
+            var ciphers = new ICipher[] { new CaesarCipher(1), new RsaCipher("key.xml", true, true) };
+            var serverReceived = new TaskCompletionSource<bool>();
+            var clientReceived = new TaskCompletionSource<bool>();
+
+            var server = new Server(listenerPort: 4525, ciphers: ciphers);
+            server.ErrorOccurred += (_, e) =>
+            {
+                Assert.Fail($"Server error: {e.Exception.Message}");
+                serverReceived.TrySetException(e.Exception);
+                clientReceived.TrySetException(e.Exception);
+            };
+            server.DataArrived += (object sender, DataArrivedEventArgs e) =>
+            {
+                try
+                {
+                    Assert.That(e.Data, Is.EqualTo(new byte[] { 72, 101, 108, 108, 111 })); // "Hello"
+                    server.SendMessageToClient(e.Socket, "World");
+                    serverReceived.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    serverReceived.TrySetException(ex);
+                }
+            };
+            server.Start();
+
+            var client = new Client("127.0.0.1", 4525, ciphers: ciphers);
+            client.DataArrived += (object sender, DataArrivedEventArgs e) =>
+            {
+                try
+                {
+                    Assert.That(e.Data, Is.EqualTo(new byte[] { 87, 111, 114, 108, 100 })); // "World"
+                    clientReceived.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    clientReceived.TrySetException(ex);
+                }
+            };
+            client.Connect();
+            client.Send("Hello");
+
+            Task.WaitAll(serverReceived.Task, clientReceived.Task);
+
+            client.Disconnect();
+            server.Dispose();
         }
     }
 }

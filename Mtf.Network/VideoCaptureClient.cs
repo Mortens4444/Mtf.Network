@@ -63,7 +63,7 @@ namespace Mtf.Network
                     Timeout = timeout
                 };
                 client.DataArrived += ClientDataArrivedEventHandler;
-                client.SetBufferSize(BufferSize);
+                SocketConfigurator.SetBufferSize(client.Socket, BufferSize);
                 client.Connect();
             }
         }

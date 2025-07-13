@@ -76,7 +76,7 @@ namespace Mtf.Network
                 ListenerPortOfServer = (ushort)((IPEndPoint)Socket.LocalEndPoint).Port;
             }
 
-            SetBufferSize();
+            SocketConfigurator.SetBufferSize(Socket);
         }
 
         private void AcceptCallback(IAsyncResult ar)

@@ -55,7 +55,7 @@ namespace Mtf.Network
 
             Server = new Server(addressFamily, socketType, protocolType, ipAddress, listenerPort, ciphers);
             Server.Start();
-            Server.SetBufferSize(BufferSize);
+            SocketConfigurator.SetBufferSize(Server.Socket, BufferSize);
             
             _ = Task.Run(async () =>
             {

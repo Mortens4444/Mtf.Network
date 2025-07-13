@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Mtf.Cryptography.AsymmetricCiphers;
 using Mtf.Cryptography.Interfaces;
 using Mtf.Extensions;
 using Mtf.Network.EventArg;
@@ -12,14 +11,24 @@ using System.Threading.Tasks;
 
 namespace Mtf.Network
 {
-    public class Communicator : Disposable, ICommunicator
+    public partial class Communicator : Disposable, ICommunicator
     {
         public event EventHandler<DataArrivedEventArgs> DataArrived;
         public event EventHandler<ExceptionEventArgs> ErrorOccurred;
         public event EventHandler<MessageEventArgs> MessageSent;
 
         protected Action<ILogger, Communicator, string, Exception> LogErrorAction { get; }
-        public ICipher[] Ciphers { get; }
+        public MultiCipherEncryptionHandler MultiCipherEncryptionHandler { get; }
+
+        public ILogger Logger { get; set; }
+        public AddressFamily AddressFamily { get; private set; }
+        public SocketType SocketType { get; private set; }
+        public ProtocolType ProtocolType { get; private set; }
+        public Socket Socket { get; set; }
+        public Encoding Encoding { get; set; } = Encoding.UTF8;
+        public ushort ListenerPortOfServer { get; set; }
+
+        protected int BufferSize { get; set; } = Constants.MaxBufferSize;
 
         public Communicator(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, ushort listenerPortOfServer, params ICipher[] ciphers)
         {
@@ -27,41 +36,8 @@ namespace Mtf.Network
             AddressFamily = addressFamily;
             SocketType = socketType;
             ProtocolType = protocolType;
-            this.Ciphers = ciphers;
+            MultiCipherEncryptionHandler = new MultiCipherEncryptionHandler(ciphers);
             LogErrorAction = LoggerMessage.Define<Communicator, string>(LogLevel.Error, new EventId(1, "SerialDevice"), "Error occurred in communicator: {Device}, {EventDetails}");
-        }
-
-        public ILogger Logger { get; set; }
-
-        public AddressFamily AddressFamily { get; private set; }
-
-        public SocketType SocketType { get; private set; }
-
-        public ProtocolType ProtocolType { get; private set; }
-
-        public Socket Socket { get; set; }
-
-        public Encoding Encoding { get; set; } = Encoding.UTF8;
-
-        public ushort ListenerPortOfServer { get; set; }
-
-        protected int BufferSize { get; set; } = Constants.MaxBufferSize;
-
-        public void SetBufferSize(int bufferSize = Constants.MaxBufferSize)
-        {
-            BufferSize = bufferSize;
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, bufferSize);
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, bufferSize);
-        }
-
-        /// <summary>
-        /// A value that specifies the amount of time after which a synchronous Overload:System.Net.Sockets.Socket.Send call will time out.
-        /// </summary>
-        /// <param name="value">The time-out value, in milliseconds. If you set the property with a value between 1 and 499, the value will be changed to 500.
-        /// The default value is 0, which indicates an infinite time-out period. Specifying -1 also indicates an infinite time-out period.</param>
-        public void SetTimeout(int value = 0)
-        {
-            SetSocketTimeout(Socket, value);
         }
 
         public bool Send(string message, bool appendNewLine = false)
@@ -104,70 +80,9 @@ namespace Mtf.Network
             }
         }
 
-        public async Task<bool> SendAsync(byte[] bytes, bool appendNewLine = false)
+        public Task<bool> SendAsync(byte[] bytes, bool appendNewLine = false)
         {
-            if (Socket?.Connected != true)
-            {
-                return false;
-            }
-
-            try
-            {
-                if (!await SendAsync(Socket, bytes).ConfigureAwait(false))
-                {
-                    return false;
-                }
-
-                if (appendNewLine)
-                {
-                    var newLineBytes = Encoding.GetBytes(Environment.NewLine);
-                    if (!await SendAsync(Socket, newLineBytes).ConfigureAwait(false))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private static Task<bool> SendAsync(Socket socket, byte[] data)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-
-            if (socket?.Connected != true)
-            {
-                tcs.SetResult(false);
-                return tcs.Task;
-            }
-
-            using (var args = new SocketAsyncEventArgs())
-            {
-                args.SetBuffer(data, 0, data.Length);
-
-                EventHandler<SocketAsyncEventArgs> handler = null;
-                handler = (s, e) =>
-                {
-                    args.Completed -= handler;
-                    args.Dispose();
-
-                    var success = e.SocketError == SocketError.Success && e.BytesTransferred == data.Length;
-                    tcs.SetResult(success);
-                };
-
-                args.Completed += handler;
-
-                if (!socket.SendAsync(args))
-                {
-                    handler(socket, args);
-                }
-            }
-
-            return tcs.Task;
+            return SocketSendHelper.SendAsync(Socket, bytes, appendNewLine, Encoding, MultiCipherEncryptionHandler);
         }
 
         public bool Send(Socket socket, string message, bool appendNewLine = false)
@@ -177,115 +92,17 @@ namespace Mtf.Network
 
         public Task<bool> SendAsync(Socket socket, string message, bool appendNewLine = false)
         {
-            return Communicator.SendAsync(socket, ConvertMessageToData(message, appendNewLine));
+            return SocketSendHelper.SendAsync(socket, ConvertMessageToData(message, appendNewLine), appendNewLine, Encoding, MultiCipherEncryptionHandler);
         }
 
         public bool Send(Socket socket, byte[] bytes, bool appendNewLine = false, bool encryptData = true)
         {
-            if (socket?.Connected != true)
-            {
-                return false;
-            }
-
-            if (encryptData)
-            {
-                bytes = Transform(bytes, true);
-            }
-            var success = socket.Send(bytes, SocketFlags.None) == bytes?.Length;
-            if (success && appendNewLine)
-            {
-                var enterBytes = Encoding.GetBytes(Environment.NewLine);
-                success &= socket.Send(enterBytes) == enterBytes.Length;
-            }
-            return success;
-        }
-
-        public Task<bool> SendAsync(Socket socket, byte[] bytes, bool appendNewLine = false)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-
-            if (socket?.Connected != true)
-            {
-                tcs.SetResult(false);
-                return tcs.Task;
-            }
-
-            bytes = Transform(bytes, true);
-
-            using (var args = new SocketAsyncEventArgs())
-            {
-                args.SetBuffer(bytes, 0, bytes.Length);
-
-                EventHandler<SocketAsyncEventArgs> handler = null;
-                handler = (s, e) =>
-                {
-                    args.Completed -= handler;
-                    args.Dispose();
-
-                    if (e.SocketError == SocketError.Success && e.BytesTransferred == bytes.Length)
-                    {
-                        if (appendNewLine)
-                        {
-                            SendNewLine(socket).ContinueWith(t =>
-                            {
-                                tcs.SetResult(t.Result);
-                            }, TaskScheduler.Default);
-                        }
-                        else
-                        {
-                            tcs.SetResult(true);
-                        }
-                    }
-                    else
-                    {
-                        tcs.SetResult(false);
-                    }
-                };
-
-                args.Completed += handler;
-
-                if (!socket.SendAsync(args))
-                {
-                    handler(socket, args);
-                }
-            }
-
-            return tcs.Task;
-        }
-
-        private Task<bool> SendNewLine(Socket socket)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            var newLineBytes = Encoding.GetBytes(Environment.NewLine);
-
-            using (var args = new SocketAsyncEventArgs())
-            {
-                args.SetBuffer(newLineBytes, 0, newLineBytes.Length);
-
-                EventHandler<SocketAsyncEventArgs> handler = null;
-                handler = (s, e) =>
-                {
-                    args.Completed -= handler;
-                    args.Dispose();
-
-                    var ok = e.SocketError == SocketError.Success && e.BytesTransferred == newLineBytes.Length;
-                    tcs.SetResult(ok);
-                };
-
-                args.Completed += handler;
-
-                if (!socket.SendAsync(args))
-                {
-                    handler(socket, args);
-                }
-            }
-
-            return tcs.Task;
+            return SocketSendHelper.Send(socket, bytes, socket, appendNewLine, encryptData, Encoding, MultiCipherEncryptionHandler);
         }
 
         protected void OnDataArrived(Socket socket, byte[] data)
         {
-            data = Transform(data, false);
+            data = MultiCipherEncryptionHandler.Transform(data, false);
             DataArrived?.Invoke(this, new DataArrivedEventArgs(socket, data));
         }
 
@@ -297,17 +114,6 @@ namespace Mtf.Network
         protected void OnMessageSent(string message)
         {
             MessageSent?.Invoke(this, new MessageEventArgs(message));
-        }
-
-        protected static void SetSocketTimeout(Socket socket, int value)
-        {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, value);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, value);
         }
 
         protected override void DisposeManagedResources()
@@ -329,27 +135,26 @@ namespace Mtf.Network
             var messageToSend = TransformMessage(message, appendNewLine);
             return Encoding.GetBytes(messageToSend);
         }
-
         public void SendAsymmetricCiphersPublicKeys()
         {
-            //foreach (var cipher in Ciphers)
-            //{
-            //    if (cipher is IAsymmetricCipher asymmetricCipher)
+            //    foreach (var cipher in ciphers)
             //    {
-            //        SendPublicKey(asymmetricCipher);
+            //        if (cipher is IAsymmetricCipher asymmetricCipher)
+            //        {
+            //            SendPublicKey(asymmetricCipher);
+            //        }
             //    }
-            //}
         }
 
-        private void SendPublicKey(IAsymmetricCipher cipher)
-        {
-            if (cipher == null)
-            {
-                throw new ArgumentNullException(nameof(cipher));
-            }
-            Send(Socket, Encoding.GetBytes(RsaCipher.RsaKeyHeader), false, false);
-            Send(Socket, cipher.PublicKey, true, false);
-        }
+        //private void SendPublicKey(IAsymmetricCipher cipher)
+        //{
+        //    if (cipher == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(cipher));
+        //    }
+        //    Send(Socket, Encoding.GetBytes(RsaCipher.RsaKeyHeader), false, false);
+        //    Send(Socket, cipher.PublicKey, true, false);
+        //}
 
         public override string ToString()
         {
@@ -364,28 +169,6 @@ namespace Mtf.Network
                 result = result.Replace(SocketExtensions.IpAnyWithoutColon, Socket.GetLocalIPAddressesInfo(NetUtils.GetLocalIPAddresses, "|"));
             }
             return result;
-        }
-
-        private byte[] Transform(byte[] data, bool encrypt)
-        {
-            if (Ciphers != null)
-            {
-                if (encrypt)
-                {
-                    for (int i = 0; i < Ciphers.Length; i++)
-                    {
-                        data = Ciphers[i].Encrypt(data);
-                    }
-                }
-                else
-                {
-                    for (int i = Ciphers.Length - 1; i >= 0; i--)
-                    {
-                        data = Ciphers[i].Decrypt(data);
-                    }
-                }
-            }
-            return data;
         }
     }
 }
